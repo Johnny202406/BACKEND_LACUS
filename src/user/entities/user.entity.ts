@@ -1,6 +1,6 @@
 
 import { TypeUser } from 'src/type-user/entities/type-user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity("usuario")
 export class User {
@@ -29,6 +29,7 @@ export class User {
   habilitado: boolean;
 
   @ManyToOne(() => TypeUser, typeUser => typeUser.id)
+  @JoinColumn({ name: 'id_tipo_usuario' }) 
   id_tipo_usuario: TypeUser;
 
 }
