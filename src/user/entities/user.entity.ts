@@ -1,10 +1,15 @@
-
 import { TypeUser } from 'src/type-user/entities/type-user.entity';
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 
-@Entity("usuario")
+@Entity('usuario')
 export class User {
-    @PrimaryGeneratedColumn('identity')
+  @PrimaryGeneratedColumn('identity')
   id: number;
 
   @Column({ type: 'varchar', length: 36, unique: true })
@@ -16,10 +21,10 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   apellido: string;
 
-  @Column({ type: 'varchar', length: 15 })
+  @Column({ type: 'varchar', length: 15,nullable: true })
   dni: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 20,nullable: true })
   numero: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
@@ -28,8 +33,10 @@ export class User {
   @Column({ type: 'bool', default: true })
   habilitado: boolean;
 
-  @ManyToOne(() => TypeUser, typeUser => typeUser.id)
-  @JoinColumn({ name: 'id_tipo_usuario' }) 
+  @ManyToOne(() => TypeUser, (typeUser) => typeUser.id, {
+    nullable: false,
+    eager: true,
+  })
+  @JoinColumn({ name: 'id_tipo_usuario' })
   id_tipo_usuario: TypeUser;
-
 }

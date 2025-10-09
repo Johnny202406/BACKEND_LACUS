@@ -4,35 +4,37 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TokenPayload } from 'google-auth-library';
 
 @Injectable()
 export class UserService {
-   constructor(
-      @InjectRepository(User)
-      private userRepository: Repository<User>,
-    ) {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
   // create(createUserDto: CreateUserDto) {
   //   return 'This action adds a new user';
   // }
-  async create({tokenPayload,userDataRegister}:CreateUserDto):Promise<User>{
-    const user:User = this.userRepository.create(<User>{
-      sub:tokenPayload.sub,
-      nombre:tokenPayload.given_name?.toUpperCase(),
-      apellido:tokenPayload.family_name?.toUpperCase(),
-      correo:tokenPayload.email,
-      dni:userDataRegister.dni,
-      numero:userDataRegister.numero,
+  async create(tokenPayload:TokenPayload): Promise<User> {
+    const user: User = this.userRepository.create({
+      sub: tokenPayload.sub,
+      nombre: tokenPayload.given_name?.toUpperCase(),
+      apellido: tokenPayload.family_name?.toUpperCase(),
+      correo: tokenPayload.email?.toLowerCase(),
     });
 
-    return await this.userRepository.save(user)
+    return await this.userRepository.save(user);
   }
 
   findAll() {
     return `This action returns all user`;
   }
 
-  async findOne(sub: string) {
-    return await this.userRepository.findOneBy({sub})
+  async findOne(sub: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { sub },
+      relations: ['id_tipo_usuario'],
+    });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

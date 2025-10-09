@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "git": "git add . && git commit -m \"update\" && git push backend main"
+    "git": "git add . && git commit -m \"update\" && git push backend main",
+    "pull": "git pull backend main"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

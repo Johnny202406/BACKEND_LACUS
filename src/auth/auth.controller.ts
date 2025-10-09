@@ -1,27 +1,39 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Headers, Res, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Res,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { AuthDto } from './dto/auth.dto';
-import { RegisterDto } from './dto/register.dto';
-import express from 'express';
+import type { Response,Request } from 'express';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('loginAndRegister')
-  async loginAndRegister(@Res() res: express.Response,@Body() authDto: AuthDto) {
-    const user= await this.authService.loginAndRegister(authDto);
-    if (user) {
-        return res.status(200).send(user);
-    }
-        
-     return res.status(202)
+  async loginAndRegister(
+    @Res({ passthrough: true }) response: Response,
+    @Body() authDto: AuthDto,
+  ): Promise<User|undefined> {
+    return await this.authService.loginAndRegister(response,authDto);
   }
-  @Post('register')
-  async register(@Body() RegisterDto:RegisterDto){
-    return await this.authService.SignUp(RegisterDto)
+  @Get('loadUser')
+  async loadUser(@Req() request: Request): Promise<User> {
+    return await this.authService.loadUser(request);
+  }
+  @Get('logout')
+  async logout(@Res({ passthrough: true }) response: Response) {
+    return await this.authService.logout(response);
   }
 
   @Post()

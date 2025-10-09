@@ -31,12 +31,11 @@ CREATE TABLE "producto" (
   "nombre" varchar(255) UNIQUE NOT NULL,
   "descripcion" text DEFAULT 'Descripción...',
   "peso_kg" float NOT NULL DEFAULT 0,
-  "volumen_cm3" float NOT NULL DEFAULT 0,
   "precio" decimal(10,2) NOT NULL DEFAULT 0,
-  "habilitado" bool DEFAULT true,
-  "porcentaje_descuento" integer DEFAULT 0,
-  "id_categoria" integer NOT NULL,
-  "id_marca" integer NOT NULL
+  "habilitado" bool NOT NULL DEFAULT true,
+  "porcentaje_descuento" integer NOT NULL DEFAULT 0,
+  "id_categoria" integer NOT NULL DEFAULT 1,
+  "id_marca" integer NOT NULL DEFAULT 1
 );
 
 CREATE TABLE "categoria" (
@@ -68,11 +67,11 @@ CREATE TABLE "usuario" (
   "sub" varchar(36) UNIQUE NOT NULL,
   "nombre" varchar(100) NOT NULL,
   "apellido" varchar(100) NOT NULL,
-  "dni" varchar(15) NOT NULL,
-  "numero" varchar(20) NOT NULL,
+  "dni" varchar(15) NULL,
+  "numero" varchar(20) NULL,
   "correo" varchar(255) UNIQUE NOT NULL,
-  "habilitado" bool DEFAULT true,
-  "id_tipo_usuario" integer NOT NULL
+  "habilitado" bool NOT NULL DEFAULT true,
+  "id_tipo_usuario" integer NOT NULL DEFAULT 2
 );
 
 CREATE TABLE "tipo_usuario" (
