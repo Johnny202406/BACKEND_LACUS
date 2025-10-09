@@ -8,6 +8,7 @@ import {
   Delete,
   Res,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -15,6 +16,7 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { AuthDto } from './dto/auth.dto';
 import type { Response,Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +29,7 @@ export class AuthController {
   ): Promise<User|undefined> {
     return await this.authService.loginAndRegister(response,authDto);
   }
+  @UseGuards(AuthGuard)
   @Get('loadUser')
   async loadUser(@Req() request: Request): Promise<User> {
     return await this.authService.loadUser(request);
