@@ -31,9 +31,11 @@ export class AuthService {
       response.status(HttpStatus.FORBIDDEN);
       return;
     } else {
-      user = await this.userService.create(tokenPayload);
+      await this.userService.create(tokenPayload);
+      user = await this.userService.findOne(tokenPayload.sub) as User;
       response.status(HttpStatus.ACCEPTED);
     }
+
     await this.setAuthCookie(response, user);
     return user;
   }
