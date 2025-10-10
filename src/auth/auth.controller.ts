@@ -16,12 +16,15 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { AuthDto } from './dto/auth.dto';
 import type { Response,Request } from 'express';
 import { User } from 'src/user/entities/user.entity';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './guards/auth.guard';
+import { Public } from './guards/roles.decorator';
 
 @Controller('auth')
+@UseGuards(AuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('loginAndRegister')
   async loginAndRegister(
     @Res({ passthrough: true }) response: Response,
@@ -29,38 +32,15 @@ export class AuthController {
   ): Promise<User|undefined> {
     return await this.authService.loginAndRegister(response,authDto);
   }
-  @UseGuards(AuthGuard)
+
   @Get('loadUser')
   async loadUser(@Req() request: Request): Promise<User> {
     return await this.authService.loadUser(request);
   }
+  @Public()
   @Get('logout')
   async logout(@Res({ passthrough: true }) response: Response) {
     return await this.authService.logout(response);
   }
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
-  }
 }
