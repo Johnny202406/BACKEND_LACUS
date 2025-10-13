@@ -23,6 +23,8 @@ export class AuthGuard implements CanActivate {
     if (!user) return false;
     const userDB = await this.userService.findOne(user.sub);
     if (!userDB) return false;
+    if(!userDB?.habilitado) return false;
+    request['user'] = userDB;
     return true;
   }
 }

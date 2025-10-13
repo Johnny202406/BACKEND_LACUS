@@ -8,7 +8,7 @@ import {
 
 @Entity('tipo_usuario')
 export class TypeUser {
-  @PrimaryGeneratedColumn('identity')
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 100 })

@@ -6,6 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { TypeUserModule } from './type-user/type-user.module';
 import { ConfigModule } from '@nestjs/config';
+import { EstadoPedidoModule } from './estado-pedido/estado-pedido.module';
+import { OrderStatusModule } from './order-status/order-status.module';
+import { DeliveryTypeModule } from './delivery-type/delivery-type.module';
+import { PaymentMethodModule } from './payment-method/payment-method.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -27,6 +32,11 @@ import { ConfigModule } from '@nestjs/config';
     }),
     UserModule,
     TypeUserModule,
+    EstadoPedidoModule,
+    OrderStatusModule,
+    DeliveryTypeModule,
+    PaymentMethodModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],

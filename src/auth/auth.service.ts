@@ -67,7 +67,7 @@ export class AuthService {
   async loadUser(request: Request): Promise<User> {
     const cookie = request.signedCookies['auth'];
     const jwtdecoded = await this.jwtService.verifyAsync(cookie);
-
+    const user = await this.userService.findOne(jwtdecoded.sub) as User;
     return user;
   }
   async logout(response: Response) {
