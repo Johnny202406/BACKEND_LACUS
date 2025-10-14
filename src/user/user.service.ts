@@ -45,7 +45,7 @@ export class UserService {
     // no puedes desestructurar con el spread operator (...) un boolean x ejemplo
     // explicación ya que me puedo olvidar jjsjs
     return await this.userRepository.findAndCount({
-      where,
+      where: where,
       take: pageSize,
       skip: (page - 1) * pageSize,
       relations: ['id_tipo_usuario'],

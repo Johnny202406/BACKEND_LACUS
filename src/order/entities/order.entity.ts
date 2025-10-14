@@ -10,7 +10,6 @@ import {
   JoinColumn,
 } from 'typeorm';
 
-
 @Entity('order')
 export class Order {
   @PrimaryGeneratedColumn()
@@ -20,10 +19,10 @@ export class Order {
   codigo: string;
 
   @Column({ type: 'date' , nullable: false})
-  fecha: string;
+  fecha: Date;
 
   @Column({ type: 'time' , nullable: false})
-  hora: string;
+  hora: Date;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total: number;
@@ -34,20 +33,31 @@ export class Order {
   @Column({ type: 'date', nullable: true })
   ultima_fecha: string;
 
-
-  @ManyToOne(() => OrderStatus)
+  @ManyToOne(() => OrderStatus,(orderStatus) => orderStatus.id, {
+    nullable: false,
+    eager: true,
+  })
   @JoinColumn({ name: 'id_estado_pedido' })
   id_estado_pedido: OrderStatus;
 
-  @ManyToOne(() => DeliveryType)
+  @ManyToOne(() => DeliveryType,(deliveryType) => deliveryType.id, {
+    nullable: false,
+    eager: true,
+  })
   @JoinColumn({ name: 'id_tipo_entrega' })
   id_tipo_entrega: DeliveryType;
 
-  @ManyToOne(() => PaymentMethod)
+  @ManyToOne(() => PaymentMethod,(paymentMethod) => paymentMethod.id, {
+    nullable: false,
+    eager: true,
+  })
   @JoinColumn({ name: 'id_metodo_pago' })
   id_metodo_pago: PaymentMethod;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User,(user) => user.id, {
+    nullable: false,
+    eager: true,
+  })
   @JoinColumn({ name: 'id_usuario' })
   id_usuario: User;
 }

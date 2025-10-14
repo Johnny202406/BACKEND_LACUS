@@ -35,7 +35,7 @@ export class User {
 
   @ManyToOne(() => TypeUser, (typeUser) => typeUser.id, {
     nullable: false,
-    eager: true,
+    eager: false,
   })
   @JoinColumn({ name: 'id_tipo_usuario' })
   id_tipo_usuario: TypeUser;
