@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { FindAllByAdminDto } from './dto/findAllByAdmin.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class OrderService {
@@ -76,13 +77,13 @@ export class OrderService {
     } = findAllByAdminDto;
 
     const query = this.orderRepository.createQueryBuilder('order')
-      .leftJoinAndSelect('order.usuario', 'usuario')  // ajusta la relación según tu modelo
+      .leftJoinAndSelect(User,'user', 'user.id = order.id_usuario')  
       .take(pageSize)
       .skip((page - 1) * pageSize);
 
     if (searchByCodeOrEmail) {
       query.andWhere(
-        '(order.codigo LIKE :search OR usuario.correo LIKE :search)',
+        '(order.codigo LIKE :search OR user.correo LIKE :search)',
         { search: `%${searchByCodeOrEmail.trim()}%` }
       );
     }
@@ -107,7 +108,6 @@ export class OrderService {
       query.andWhere('order.id_metodo_pago = :paymentMethod', { paymentMethod });
     }
     return await query.getManyAndCount();
-
     
   }
 
