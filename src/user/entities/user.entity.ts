@@ -1,10 +1,14 @@
-import { TypeUser } from 'src/type-user/entities/type-user.entity';
+import { Cart } from 'src/cart/entities/cart.entity';
+import { Order } from 'src/order/entities/order.entity';
+import { UserType } from 'src/user-type/entities/user-type.entity';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
+  OneToOne,
 } from 'typeorm';
 
 @Entity('usuario')
@@ -21,10 +25,10 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   apellido: string;
 
-  @Column({ type: 'varchar', length: 15,nullable: true })
+  @Column({ type: 'varchar', length: 15, nullable: true })
   dni: string;
 
-  @Column({ type: 'varchar', length: 20,nullable: true })
+  @Column({ type: 'varchar', length: 20, nullable: true })
   numero: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
@@ -33,10 +37,22 @@ export class User {
   @Column({ type: 'bool', default: true })
   habilitado: boolean;
 
-  @ManyToOne(() => TypeUser, (typeUser) => typeUser.id, {
+  @ManyToOne(() => UserType, (userType) => userType.usuarios, {
     nullable: false,
     eager: false,
   })
   @JoinColumn({ name: 'id_tipo_usuario' })
-  id_tipo_usuario: TypeUser;
+  tipo_usuario: UserType;
+
+  @OneToOne(() => Cart, (cart) => cart.usuario, {
+    eager: false,
+    nullable: false,
+  })
+  carrito:Cart
+
+  @OneToMany(() => Order, (order) => order.usuario, {
+    eager: false,
+    nullable: false,
+  })
+  pedidos: Order[];
 }

@@ -45,7 +45,7 @@ export class OrderService {
       paymentMethod,
     } = findAllByUserDto;
     const where: any = {
-      id_usuario: id
+      id_usuario: id,
       ...(searchByCode && { correo: Like(`%${searchByCode.trim()}%`) }),
       ...(startDate && endDate
         ? { fecha: Between(startDate, endDate) }
