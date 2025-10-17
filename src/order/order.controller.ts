@@ -12,12 +12,13 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { FindAllByUserDto } from './dto/findAllByUser.dto';
+import { FindByUserDto } from './dto/findByUser.dto';
 import { Order } from './entities/order.entity';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Role, Roles } from 'src/auth/guards/roles.decorator';
 import { IsClientGuard } from 'src/auth/guards/is-client.guard';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
+import { FindByAdminDto } from './dto/findByAdmin.dto';
 
 @Controller('order')
 @UseGuards(AuthGuard)
@@ -36,21 +37,20 @@ export class OrderController {
 
   @Roles(Role.CLIENT)
   @UseGuards(IsClientGuard)
-  @Get('byClient/:id')
+  @Get('findByClient/:id')
   async findAllByUser(
     @Param() id: string,
-    @Query() findAllByUserDto: FindAllByUserDto,
+    @Query() findByUserDto: FindByUserDto,
   ): Promise<[Order[], number]> {
-    return await this.orderService.findAllByUser(+id, findAllByUserDto);
+    return await this.orderService.findByUser(+id, findByUserDto);
   }
   @Roles(Role.ADMIN)
   @UseGuards(IsAdminGuard)
-  @Get('byAdmin')
-  async findAllByAdmin(
-    @Param() id: string,
-    @Query() findAllByUserDto: FindAllByUserDto,
+  @Get('findByAdmin')
+  async findByAdmin(
+    @Query() findByAdminDto: FindByAdminDto,
   ): Promise<[Order[], number]> {
-    return await this.orderService.findAllByUser(+id, findAllByUserDto);
+    return await this.orderService.findByAdmin(findByAdminDto);
   }
 
   @Get(':id')

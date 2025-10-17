@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { FindAllByUserDto } from './dto/findAllByUser.dto';
+import { FindByUserDto } from './dto/findByUser.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Between,
@@ -13,7 +13,7 @@ import {
   Repository,
 } from 'typeorm';
 import { Order } from './entities/order.entity';
-import { FindAllByAdminDto } from './dto/findAllByAdmin.dto';
+import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class OrderService {
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
-  ) { }
+  ) {}
   create(createOrderDto: CreateOrderDto) {
     return 'This action adds a new order';
   }
@@ -30,19 +30,19 @@ export class OrderService {
     return `This action returns all order`;
   }
 
-  async findAllByUser(
+  async findByUser(
     id: number,
-    findAllByUserDto: FindAllByUserDto,
+    findAllByUserDto: FindByUserDto,
   ): Promise<[Order[], number]> {
     const {
       page,
       pageSize,
-      searchByCode,
-      startDate,
-      endDate,
-      orderStatus,
-      deliveryType,
-      paymentMethod,
+      searchByCode = undefined,
+      startDate = undefined,
+      endDate = undefined,
+      orderStatus = undefined,
+      deliveryType = undefined,
+      paymentMethod = undefined,
     } = findAllByUserDto;
     const where: any = {
       id_usuario: id,
@@ -64,7 +64,9 @@ export class OrderService {
       skip: (page - 1) * pageSize,
     });
   }
-  async findAllByAdmin(findAllByAdminDto: FindAllByAdminDto): Promise<[Order[], number]> {
+  async findByAdmin(
+    findAllByAdminDto: FindByAdminDto,
+  ): Promise<[Order[], number]> {
     const {
       page,
       pageSize,
@@ -76,20 +78,24 @@ export class OrderService {
       paymentMethod,
     } = findAllByAdminDto;
 
-    const query = this.orderRepository.createQueryBuilder('order')
-      .leftJoinAndSelect(User,'user', 'user.id = order.id_usuario')  
+    const query = this.orderRepository
+      .createQueryBuilder('order')
+      .leftJoinAndSelect(User, 'user', 'user.id = order.id_usuario')
       .take(pageSize)
       .skip((page - 1) * pageSize);
 
     if (searchByCodeOrEmail) {
       query.andWhere(
         '(order.codigo LIKE :search OR user.correo LIKE :search)',
-        { search: `%${searchByCodeOrEmail.trim()}%` }
+        { search: `%${searchByCodeOrEmail.trim()}%` },
       );
     }
 
     if (startDate && endDate) {
-      query.andWhere('order.fecha BETWEEN :startDate AND :endDate', { startDate, endDate });
+      query.andWhere('order.fecha BETWEEN :startDate AND :endDate', {
+        startDate,
+        endDate,
+      });
     } else if (startDate) {
       query.andWhere('order.fecha >= :startDate', { startDate });
     } else if (endDate) {
@@ -105,14 +111,12 @@ export class OrderService {
     }
 
     if (paymentMethod) {
-      query.andWhere('order.id_metodo_pago = :paymentMethod', { paymentMethod });
+      query.andWhere('order.id_metodo_pago = :paymentMethod', {
+        paymentMethod,
+      });
     }
     return await query.getManyAndCount();
-    
   }
-
-
-
 
   findOne(id: number) {
     return `This action returns a #${id} order`;

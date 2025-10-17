@@ -1,23 +1,27 @@
+import { Transform } from 'class-transformer';
 import {
   IsOptional,
   IsString,
   IsInt,
   IsNotEmpty,
   IsDate,
+  IsPositive,
 } from 'class-validator';
 
-export class FindAllByAdminDto {
+export class FindByUserDto {
   @IsInt()
+  @IsPositive()
   @IsNotEmpty()
   page: number;
 
   @IsInt()
+  @IsPositive()
   @IsNotEmpty()
   pageSize: number;
 
   @IsString()
   @IsOptional()
-  searchByCodeOrEmail: string;
+  searchByCode: string;
 
   @IsDate()
   @IsOptional()

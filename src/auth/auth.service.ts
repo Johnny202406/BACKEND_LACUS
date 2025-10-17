@@ -48,7 +48,7 @@ export class AuthService {
   }
 
   async setAuthCookie(response: Response, user: User) {
-    const minutes = user?.id_tipo_usuario.id === 1 ? 90 : 30;
+    const minutes = user?.tipo_usuario.id === 1 ? 90 : 30;
     const plainUser = instanceToPlain(user);
     const jwt = await this.jwtService.signAsync(plainUser, {
       expiresIn: minutes * 60,
