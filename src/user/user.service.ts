@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayload } from 'google-auth-library';
 import { UpdateUserMyDto } from './dto/update-user-my.dto';
@@ -37,7 +37,7 @@ export class UserService {
   async findAll(findAllUserDto: FindAllUserDto): Promise<[User[], number]> {
     const { page, pageSize, searchByEmail, enabled } = findAllUserDto;
     const where: any = {
-      ...(searchByEmail && { correo: Like(`%${searchByEmail}%`) }),
+      ...(searchByEmail && { correo: ILike(`%${searchByEmail}%`) }),
       ...(enabled !== undefined && { habilitado: enabled }),
     };
     // El operador cortocircuito (&&) devuelve el primer operando falso,

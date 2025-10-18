@@ -1,19 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { UploadApiResponse } from 'cloudinary';
 import cloudinary from 'src/cloudinary';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
+import { UpdateCategoryDto } from './dto/MyUpdateCategory.dto';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) { }
+  ) {}
+
+  async findAll() {
+    return await this.categoryRepository.findAndCount();
+  }
+  async findAllEnabled() {
+    return await this.categoryRepository.findAndCountBy({ habilitado: true });
+  }
   async create(
     createCategoryDto: CreateCategoryDto,
     file: Express.Multer.File,
@@ -38,23 +45,24 @@ export class CategoryService {
     );
 
     const category: Category = this.categoryRepository.create({
-      nombre: createCategoryDto.nombre,
+      nombre: createCategoryDto.nombre.trim().toUpperCase(),
       public_id: uploadResult.public_id,
       secure_url: uploadResult.secure_url,
     });
-    return await this.categoryRepository.save(category);
+    await this.categoryRepository.save(category);
+    return `This action creates a new category`;
   }
 
-  async findByAdmin(findAllByAdmin: FindByAdminDto) {
+  async findByAdmin(findByAdminDto: FindByAdminDto) {
     const {
       page,
       pageSize,
       searchByName = undefined,
       enabled = undefined,
-    } = findAllByAdmin;
+    } = findByAdminDto;
     const where: any = {
       ...(searchByName && {
-        titulo: Like(`%${searchByName.trim()}%`),
+        nombre: ILike(`%${searchByName.trim()}%`),
       }),
       ...(enabled && {
         habilitado: enabled,
@@ -70,14 +78,13 @@ export class CategoryService {
 
   async update(
     id: number,
-    updateCategoryDto: CreateCategoryDto,
+    updateCategoryDto: UpdateCategoryDto,
     file?: Express.Multer.File,
   ) {
-    const category: Category =
-      await this.categoryRepository.findOneByOrFail({
-        id,
-      });
-    category.nombre= updateCategoryDto.nombre;
+    const category: Category = await this.categoryRepository.findOneByOrFail({
+      id,
+    });
+    category.nombre = updateCategoryDto.nombre.trim().toUpperCase();
 
     if (file) {
       const uploadResult: UploadApiResponse = await new Promise(
@@ -107,18 +114,12 @@ export class CategoryService {
     return `This action updates a #${id} category`;
   }
 
-  async remove(id: number) {
+  async enabledDisabled(id: number, enabled: boolean) {
     const category = await this.categoryRepository.findOneByOrFail({
       id,
     });
-    const deletedResult = await cloudinary.uploader.destroy(
-      category.public_id,
-      {
-        resource_type: 'image',
-        invalidate: true,
-      },
-    );
-    await this.categoryRepository.remove(category);
-    return `This action removes a #${id} category`;
+    category.habilitado = enabled;
+    await this.categoryRepository.save(category);
+    return `This action enables or disables a #${id} category`;
   }
 }

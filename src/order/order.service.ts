@@ -8,7 +8,7 @@ import {
   FindOptionsOrder,
   FindOptionsWhere,
   LessThanOrEqual,
-  Like,
+  ILike,
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
@@ -46,7 +46,7 @@ export class OrderService {
     } = findAllByUserDto;
     const where: any = {
       id_usuario: id,
-      ...(searchByCode && { correo: Like(`%${searchByCode.trim()}%`) }),
+      ...(searchByCode && { correo: ILike(`%${searchByCode.trim()}%`) }),
       ...(startDate && endDate
         ? { fecha: Between(startDate, endDate) }
         : startDate
@@ -86,7 +86,7 @@ export class OrderService {
 
     if (searchByCodeOrEmail) {
       query.andWhere(
-        '(order.codigo LIKE :search OR user.correo LIKE :search)',
+        '(order.codigo ILIKE :search OR user.correo ILIKE :search)',
         { search: `%${searchByCodeOrEmail.trim()}%` },
       );
     }

@@ -1,34 +1,69 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
-import { UpdateBrandDto } from './dto/update-brand.dto';
+import { Public, Role, Roles } from 'src/auth/guards/roles.decorator';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
+import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateBrandDto } from './dto/MyUpdateBrand.dto';
+import { MyParseFilePipeBuilder } from 'src/MyParseFilePipeBuilder';
+import { FindByAdminDto } from './dto/findByAdmin.dto';
 
+@Roles(Role.ADMIN)
+@UseGuards(AuthGuard, IsAdminGuard)
 @Controller('brand')
 export class BrandController {
   constructor(private readonly brandService: BrandService) {}
 
-  @Post()
-  create(@Body() createBrandDto: CreateBrandDto) {
-    return this.brandService.create(createBrandDto);
+  @Get('findAll')
+  async findAll() {
+    return await this.brandService.findAll();
   }
 
-  @Get()
-  findAll() {
-    return this.brandService.findAll();
+  @Public()
+  @Get('findAllEnabled')
+  async findAllEnabled() {
+    return await this.brandService.findAllEnabled();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.brandService.findOne(+id);
+  @Post('create')
+  @UseInterceptors(FileInterceptor('file'))
+  async create(
+    @Body() createBrandDto: CreateBrandDto,
+    @UploadedFile(MyParseFilePipeBuilder)
+    file: Express.Multer.File,
+  ) {
+    return await this.brandService.create(createBrandDto, file);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
-    return this.brandService.update(+id, updateBrandDto);
+  @Get('findByAdmin')
+  async findByAdmin(@Body() findByAdminDto: FindByAdminDto) {
+    return await this.brandService.findByAdmin(findByAdminDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.brandService.remove(+id);
+  @Patch('update/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  update(
+    @Param('id') id: string,
+    @Body() updateBrandDto: UpdateBrandDto,
+    @UploadedFile(MyParseFilePipeBuilder)
+    file?: Express.Multer.File,
+  ) {
+    return this.brandService.update(+id, updateBrandDto, file);
+  }
+
+  @Patch('enabledDisabled/:id')
+  async enabledDisabled(@Param('id') id: string, @Body() enabled: boolean) {
+    return await this.brandService.enabledDisabled(+id, enabled);
   }
 }

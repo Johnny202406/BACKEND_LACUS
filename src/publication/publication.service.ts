@@ -4,8 +4,9 @@ import cloudinary from 'src/cloudinary';
 import { UploadApiResponse } from 'cloudinary';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Publication } from './entities/publication.entity';
-import { Like, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
+import { UpdatePublicationDto } from './dto/MyUpdatePublication.dto';
 
 @Injectable()
 export class PublicationService {
@@ -13,6 +14,10 @@ export class PublicationService {
     @InjectRepository(Publication)
     private publicationRepository: Repository<Publication>,
   ) {}
+
+  async findAll() {
+    return await this.publicationRepository.findAndCount();
+  }
   async create(
     createPublicationDto: CreatePublicationDto,
     file: Express.Multer.File,
@@ -42,14 +47,15 @@ export class PublicationService {
       public_id: uploadResult.public_id,
       secure_url: uploadResult.secure_url,
     });
-    return await this.publicationRepository.save(publication);
+    await this.publicationRepository.save(publication);
+    return `This action create a publication`;
   }
 
-  async findByAdmin(findAllByAdmin: FindByAdminDto) {
-    const { page, pageSize, searchByTitle = undefined } = findAllByAdmin;
+  async findByAdmin(findByAdminDto: FindByAdminDto) {
+    const { page, pageSize, searchByTitle = undefined } = findByAdminDto;
     const where: any = {
       ...(searchByTitle && {
-        titulo: Like(`%${searchByTitle.trim()}%`),
+        titulo: ILike(`%${searchByTitle.trim()}%`),
       }),
     };
 
@@ -62,15 +68,15 @@ export class PublicationService {
 
   async update(
     id: number,
-    updatePublicationDto: CreatePublicationDto,
+    updatePublicationDto: UpdatePublicationDto,
     file?: Express.Multer.File,
   ) {
     const publication: Publication =
       await this.publicationRepository.findOneByOrFail({
         id,
       });
-    publication.titulo = updatePublicationDto.titulo;
-    publication.url_redireccion = updatePublicationDto.url_redireccion;
+    publication.titulo = updatePublicationDto.titulo.trim();
+    publication.url_redireccion = updatePublicationDto.url_redireccion.trim();
 
     if (file) {
       const uploadResult: UploadApiResponse = await new Promise(

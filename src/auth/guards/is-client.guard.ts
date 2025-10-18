@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { Role } from './roles.decorator';
+import { Public, Role } from './roles.decorator';
 import { Reflector } from '@nestjs/core';
 import { UserService } from 'src/user/user.service';
 import type {Request } from 'express';
@@ -15,7 +15,13 @@ export class IsClientGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const role = this.reflector.get(Role, context.getHandler());
+   const isPublic = this.reflector.get(Public, context.getHandler());
+       if (isPublic) return true;
+       // busca metadata  primero en el metodo y luego en la clase
+       const role = this.reflector.getAllAndOverride(Role, [
+         context.getHandler(),
+         context.getClass(),
+       ]);
     const request = context.switchToHttp().getRequest() as Request;
     const userDB = request['user'] as User;
     if (role !== userDB.tipo_usuario.nombre) return false;
