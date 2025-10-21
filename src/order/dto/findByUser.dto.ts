@@ -1,4 +1,3 @@
-import { Transform } from 'class-transformer';
 import {
   IsOptional,
   IsString,
@@ -6,7 +5,10 @@ import {
   IsNotEmpty,
   IsDate,
   IsPositive,
+  IsEnum,
+  MaxLength,
 } from 'class-validator';
+import { PageSizeEnum } from 'src/Enums';
 
 export class FindByUserDto {
   @IsInt()
@@ -17,10 +19,13 @@ export class FindByUserDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
+  @IsEnum(PageSizeEnum)
   pageSize: number;
 
   @IsString()
   @IsOptional()
+  @IsNotEmpty()
+  @MaxLength(36)
   searchByCode: string;
 
   @IsDate()

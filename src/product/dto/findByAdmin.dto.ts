@@ -1,11 +1,11 @@
 import {
-  IsOptional,
-  IsString,
+  IsBoolean,
+  IsEnum,
   IsInt,
   IsNotEmpty,
-  IsDate,
+  IsOptional,
   IsPositive,
-  IsEnum,
+  IsString,
   MaxLength,
 } from 'class-validator';
 import { PageSizeEnum } from 'src/Enums';
@@ -26,25 +26,23 @@ export class FindByAdminDto {
   @IsOptional()
   @IsNotEmpty()
   @MaxLength(255)
-  searchByCodeOrEmail: string;
+  searchByCodeOrName: string;
 
-  @IsDate()
+  @IsBoolean()
   @IsOptional()
-  startDate: Date;
+  enabled: boolean;
 
-  @IsDate()
+  @IsBoolean()
   @IsOptional()
-  endDate: Date;
-
-  @IsInt()
-  @IsOptional()
-  orderStatus: number;
+  discount: boolean;
 
   @IsInt()
+  @IsPositive()
   @IsOptional()
-  deliveryType: number;
+  id_category: number;
 
   @IsInt()
+  @IsPositive()
   @IsOptional()
-  paymentMethod: number;
+  id_brand: number;
 }

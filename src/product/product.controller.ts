@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { UpdateProductDto } from './dto/MyUpdateProduct';
+import { FindByAdminDto } from './dto/findByAdmin.dto';
+
 
 @Controller('product')
 export class ProductController {
@@ -12,14 +14,19 @@ export class ProductController {
     return this.productService.create(createProductDto);
   }
 
+  @Get('findByAdminWithStock')
+  async findByAdminWithStock(@Body() findByAdminDto: FindByAdminDto) {
+    return await this.productService.findByAdminWithStock(findByAdminDto);
+  }
+
   @Get()
   findAll() {
     return this.productService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  @Get(':sub')
+  async findOneByCode(@Param('code') code: string) {
+    return await this.productService.findOneByCode(code);
   }
 
   @Patch(':id')
@@ -29,6 +36,6 @@ export class ProductController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+    // return this.productService.remove(+id);
   }
 }

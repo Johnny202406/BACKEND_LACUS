@@ -29,7 +29,7 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findOneById(+id);
   }
 
   @Roles(Role.CLIENT)
@@ -43,7 +43,7 @@ export class UserController {
   @UseGuards(IsAdminGuard)
   @Patch('disable/:id')
   enableDisable(@Param('id') id: string, @Body() value: boolean) {
-    return this.userService.enableDisable(id, value);
+    return this.userService.enableDisable(+id, value);
   }
 
   @Delete(':id')

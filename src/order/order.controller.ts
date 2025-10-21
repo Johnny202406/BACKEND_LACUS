@@ -38,7 +38,7 @@ export class OrderController {
   @Roles(Role.CLIENT)
   @UseGuards(IsClientGuard)
   @Get('findByClient/:id')
-  async findAllByUser(
+  async findByClient(
     @Param() id: string,
     @Query() findByUserDto: FindByUserDto,
   ): Promise<[Order[], number]> {

@@ -16,10 +16,21 @@ export class CategoryService {
   ) {}
 
   async findAll() {
-    return await this.categoryRepository.findAndCount();
+    return await this.categoryRepository.findAndCount({
+      order: { id: 'DESC' },
+    });
   }
   async findAllEnabled() {
-    return await this.categoryRepository.findAndCountBy({ habilitado: true });
+    return await this.categoryRepository.findAndCount({
+      where: { habilitado: true },
+      order: { id: 'DESC' },
+    });
+  }
+  async findOneEnabled(id: number) {
+    return await this.categoryRepository.findOneBy({
+      id,
+      habilitado: true,
+    });
   }
   async create(
     createCategoryDto: CreateCategoryDto,
@@ -45,7 +56,7 @@ export class CategoryService {
     );
 
     const category: Category = this.categoryRepository.create({
-      nombre: createCategoryDto.nombre.trim().toUpperCase(),
+      nombre: createCategoryDto.name.trim().toUpperCase(),
       public_id: uploadResult.public_id,
       secure_url: uploadResult.secure_url,
     });
@@ -73,6 +84,7 @@ export class CategoryService {
       where: where,
       take: pageSize,
       skip: (page - 1) * pageSize,
+      order: { id: 'DESC' },
     });
   }
 
@@ -84,7 +96,7 @@ export class CategoryService {
     const category: Category = await this.categoryRepository.findOneByOrFail({
       id,
     });
-    category.nombre = updateCategoryDto.nombre.trim().toUpperCase();
+    category.nombre = updateCategoryDto.name.trim().toUpperCase();
 
     if (file) {
       const uploadResult: UploadApiResponse = await new Promise(

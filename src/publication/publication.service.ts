@@ -16,7 +16,9 @@ export class PublicationService {
   ) {}
 
   async findAll() {
-    return await this.publicationRepository.findAndCount();
+    return await this.publicationRepository.findAndCount({
+      order: { id: 'DESC' },
+    });
   }
   async create(
     createPublicationDto: CreatePublicationDto,
@@ -63,6 +65,7 @@ export class PublicationService {
       where: where,
       take: pageSize,
       skip: (page - 1) * pageSize,
+      order: { id: 'DESC' },
     });
   }
 

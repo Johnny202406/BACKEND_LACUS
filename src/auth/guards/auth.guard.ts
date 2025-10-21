@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
     if(!cookie) return false;
     const user = await this.jwtService.verifyAsync(cookie);
     if (!user) return false;
-    const userDB = await this.userService.findOne(user.sub);
+    const userDB = await this.userService.findOneBySub(user.sub);
     if (!userDB) return false;
     if(!userDB?.habilitado) return false;
     request['user'] = userDB;

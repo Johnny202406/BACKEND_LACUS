@@ -1,20 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { CreateOrderStatusDto } from './dto/create-order-status.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { OrderStatus } from './entities/order-status.entity';
+import { Order } from 'src/order/entities/order.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class OrderStatusService {
+   constructor(
+      @InjectRepository(OrderStatus)
+      private orderStatusRepository: Repository<OrderStatus>,
+    ) {}
   create(createOrderStatusDto: CreateOrderStatusDto) {
     return 'This action adds a new orderStatus';
+  }
+
+  async findOne(id: number) {
+    return await this.orderStatusRepository.findOneBy({ id });
   }
 
   findAll() {
     return `This action returns all orderStatus`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} orderStatus`;
-  }
 
   update(id: number, updateOrderStatusDto: UpdateOrderStatusDto) {
     return `This action updates a #${id} orderStatus`;

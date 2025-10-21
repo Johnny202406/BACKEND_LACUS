@@ -16,10 +16,22 @@ export class BrandService {
   ) {}
 
   async findAll() {
-    return await this.brandRepository.findAndCount();
+    return await this.brandRepository.findAndCount({
+      order: { id: 'DESC' },
+    });
   }
   async findAllEnabled() {
-    return await this.brandRepository.findAndCountBy({ habilitado: true });
+    return await this.brandRepository.findAndCount({
+      where: { habilitado: true },
+      order: { id: 'DESC' },
+    });
+  }
+
+  async findOneEnabled(id: number) {
+    return await this.brandRepository.findOneBy({
+      id,
+      habilitado: true,
+    });
   }
   async create(createBrandDto: CreateBrandDto, file: Express.Multer.File) {
     const uploadResult: UploadApiResponse = await new Promise(
@@ -42,7 +54,7 @@ export class BrandService {
     );
 
     const brand: Brand = this.brandRepository.create({
-      nombre: createBrandDto.nombre.trim().toUpperCase(),
+      nombre: createBrandDto.name.trim().toUpperCase(),
       public_id: uploadResult.public_id,
       secure_url: uploadResult.secure_url,
     });
@@ -70,6 +82,7 @@ export class BrandService {
       where: where,
       take: pageSize,
       skip: (page - 1) * pageSize,
+      order: { id: 'DESC' },
     });
   }
 
@@ -81,7 +94,7 @@ export class BrandService {
     const brand: Brand = await this.brandRepository.findOneByOrFail({
       id,
     });
-    brand.nombre = updateBrandDto.nombre.trim().toUpperCase();
+    brand.nombre = updateBrandDto.name.trim().toUpperCase();
 
     if (file) {
       const uploadResult: UploadApiResponse = await new Promise(

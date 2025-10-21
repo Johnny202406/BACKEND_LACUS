@@ -8,7 +8,7 @@ import {
   MaxLength,
 } from 'class-validator';
 
-export class CreateProductDto {
+export class UpdateProductDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)

@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,9 +12,7 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
-  // create(createUserDto: CreateUserDto) {
-  //   return 'This action adds a new user';
-  // }
+
   async create(tokenPayload: TokenPayload): Promise<User> {
     const user: User = this.userRepository.create({
       sub: tokenPayload.sub,
@@ -28,8 +24,8 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async enableDisable(id: string, value: boolean) {
-    const user = (await this.findOneById(+id)) as User;
+  async enableDisable(id: number, value: boolean) {
+    const user = await this.userRepository.findOneByOrFail({ id });
     user.habilitado = value;
     return await this.userRepository.save(user);
   }
@@ -59,7 +55,7 @@ export class UserService {
     });
   }
 
-  async findOne(sub: string): Promise<User | null> {
+  async findOneBySub(sub: string): Promise<User | null> {
     return await this.userRepository.findOne({
       where: { sub },
       relations: ['id_tipo_usuario'],

@@ -7,7 +7,6 @@ import {
   IsPositive,
   IsString,
   MaxLength,
-  MinLength,
 } from 'class-validator';
 import { PageSizeEnum } from 'src/Enums';
 
@@ -25,7 +24,7 @@ export class FindByAdminDto {
 
   @IsString()
   @IsOptional()
-  @MinLength(1)
+  @IsNotEmpty()
   @MaxLength(100)
   searchByName: string;
 

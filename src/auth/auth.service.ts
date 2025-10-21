@@ -24,7 +24,7 @@ export class AuthService {
     authDto: AuthDto,
   ): Promise<User | undefined> {
     const tokenPayload: TokenPayload = await this.getTokenPayload(authDto);
-    let user = await this.userService.findOne(tokenPayload.sub);
+    let user = await this.userService.findOneBySub(tokenPayload.sub);
     if (user && user.habilitado) {
       response.status(HttpStatus.OK);
     } else if (user && !user.habilitado) {
@@ -32,7 +32,7 @@ export class AuthService {
       return;
     } else {
       await this.userService.create(tokenPayload);
-      user = await this.userService.findOne(tokenPayload.sub) as User;
+      user = await this.userService.findOneBySub(tokenPayload.sub) as User;
       response.status(HttpStatus.ACCEPTED);
     }
 
@@ -67,7 +67,7 @@ export class AuthService {
   async loadUser(request: Request): Promise<User> {
     const cookie = request.signedCookies['auth'];
     const jwtdecoded = await this.jwtService.verifyAsync(cookie);
-    const user = await this.userService.findOne(jwtdecoded.sub) as User;
+    const user = await this.userService.findOneBySub(jwtdecoded.sub) as User;
     return user;
   }
   async logout(response: Response) {
