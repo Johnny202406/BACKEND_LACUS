@@ -16,7 +16,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const cookieSecret = configService.get<string>('COOKIE_SECRET');
   app.use(cookieParser(cookieSecret));
-  app.enableCors({origin:'*'}
+  app.enableCors(
+    {origin:'*'}
     // { origin: 'http://localhost:4200', credentials: true }
   );
   await app.listen(process.env.PORT ?? 3000);

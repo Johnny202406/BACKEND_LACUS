@@ -45,6 +45,8 @@ CREATE TABLE
     "id_categoria" integer NOT NULL DEFAULT 1,
     "id_marca" integer NOT NULL DEFAULT 1
   );
+
+
 -- Ya esta
 CREATE TABLE
   "categoria" (
@@ -54,6 +56,10 @@ CREATE TABLE
     "public_id" varchar(255) NOT NULL,
     "secure_url" varchar(500) NOT NULL
   );
+INSERT INTO
+  "categoria" ("nombre","public_id","secure_url")
+VALUES
+  ('POLLO','vcfe37bdv','https://cloudinary/vcfe37bdv'),
 -- Ya esta
 CREATE TABLE
   "marca" (
@@ -63,7 +69,15 @@ CREATE TABLE
     "public_id" varchar(255) NOT NULL,
     "secure_url" varchar(500) NOT NULL
   );
+INSERT INTO
+  "marca" ("nombre","public_id","secure_url")
+VALUES
+  ('CORIPOLLO','vcfe37bdv','https://cloudinary/vcfe37bdv'),
 
+  INSERT INTO
+  "producto" ("codigo","nombre","descripcion","peso_kg","precio","id_categoria","id_marca")
+VALUES
+  ('273gfb2efu2e','ALIMENTO BALANCEADO','descripcion mucha descripcion',40,125.67,1,1),
 -- Ya esta
 CREATE TABLE
   "publicacion" (

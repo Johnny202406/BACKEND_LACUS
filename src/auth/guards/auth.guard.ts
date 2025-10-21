@@ -30,3 +30,4 @@ export class AuthGuard implements CanActivate {
 }
 
 // los guards cuando no implementas tu propia excepcion devuelve status code forbidden=403
+// https://docs.nestjs.com/guards

@@ -44,21 +44,21 @@ export class UserService {
       where: where,
       take: pageSize,
       skip: (page - 1) * pageSize,
-      relations: ['id_tipo_usuario'],
+      relations: ['tipo_usuario'],
     });
   }
 
   async findOneById(id: number): Promise<User | null> {
     return await this.userRepository.findOne({
       where: { id },
-      relations: ['id_tipo_usuario'],
+      relations: ['tipo_usuario'],
     });
   }
 
   async findOneBySub(sub: string): Promise<User | null> {
     return await this.userRepository.findOne({
       where: { sub },
-      relations: ['id_tipo_usuario'],
+      relations: ['tipo_usuario'],
     });
   }
 

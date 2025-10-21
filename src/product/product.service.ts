@@ -8,18 +8,16 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import {
-  Between,
   Brackets,
-  FindOptionsWhere,
   ILike,
   Not,
   Repository,
+  SelectQueryBuilder,
 } from 'typeorm';
 import { BrandService } from 'src/brand/brand.service';
 import { CategoryService } from 'src/category/category.service';
 import { UpdateProductDto } from './dto/MyUpdateProduct';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
-import { Entry } from 'src/entry/entities/entry.entity';
 
 @Injectable()
 export class ProductService {
@@ -72,54 +70,6 @@ export class ProductService {
     return `This action returns all product`;
   }
 
-  // async findByAdmin(id: number, findByAdminDto: FindByAdminDto) {
-  //   const {
-  //     page,
-  //     pageSize,
-  //     searchByCodeOrName = undefined,
-  //     enabled = undefined,
-  //     discount = undefined,
-  //     id_brand = undefined,
-  //     id_category = undefined,
-  //   } = findByAdminDto;
-
-  //   const andOptions: FindOptionsWhere<Product> = {
-  //     ...(enabled && {
-  //       habilitado: enabled,
-  //     }),
-  //     ...(discount && {
-  //       porcentaje_descuento: Between(1, 100),
-  //     }),
-  //     ...(id_brand && {
-  //       marca: { id: id_brand },
-  //     }),
-  //     ...(id_category && {
-  //       categoria: { id: id_category },
-  //     }),
-  //   };
-
-  //   const orOptions: FindOptionsWhere<Product>[] | undefined = [];
-  //   if (searchByCodeOrName) {
-  //     orOptions.push({
-  //       codigo: ILike(`%${searchByCodeOrName.trim()}%`),
-  //       ...andOptions,
-  //     });
-  //     orOptions.push({
-  //       nombre: ILike(`%${searchByCodeOrName.trim()}%`),
-  //       ...andOptions,
-  //     });
-  //   } else {
-  //     orOptions.push(andOptions);
-  //   }
-
-  //   return await this.productRepository.findAndCount({
-  //     where: orOptions,
-  //     take: pageSize,
-  //     skip: (page - 1) * pageSize,
-  //     order: { id: 'DESC' },
-  //     relations: ['categoria', 'marca'],
-  //   });
-  // }
 
   async findOneByCode(code: string) {
     return await this.productRepository.findOneOrFail({
@@ -190,10 +140,14 @@ export class ProductService {
         { search: `%${searchByCodeOrName.trim()}%` },
       );
     }
-    const queryOther = query.clone();
+    const clone = query.clone();
+    const queryOther=new SelectQueryBuilder(clone)
     queryOther.orderBy('producto.id', 'DESC');
+    const [entities, count] = await queryOther.getManyAndCount();
+
     
     query
+    .select('producto.id','id')
     .addSelect(
       'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
       'stock',
@@ -205,7 +159,6 @@ export class ProductService {
       .take(pageSize);
 
     const raw = await query.getRawMany();
-    const [entities, count] = await queryOther.getManyAndCount();
     console.log(query.getSql());
     console.log(raw, entities, count);
 

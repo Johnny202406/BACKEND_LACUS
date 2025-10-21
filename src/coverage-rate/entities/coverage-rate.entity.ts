@@ -24,7 +24,7 @@ export class CoverageRate {
     nullable: false,
     default: 0,
   })
-  tarifa_kg_km: string;
+  tarifa_kg_km: number;
 
   @Column({
     type: 'decimal',
@@ -33,5 +33,5 @@ export class CoverageRate {
     nullable: false,
     default: 0,
   })
-  tarifa_minima: string;
+  tarifa_minima: number;
 }
