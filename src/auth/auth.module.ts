@@ -18,6 +18,6 @@ import { AuthGuard } from './guards/auth.guard';
     }),forwardRef(() => UserModule)],
   controllers: [AuthController],
   providers: [AuthService, AuthGuard],
-  exports:[JwtModule, AuthGuard,]
+  exports:[JwtModule, AuthGuard,UserModule]
 })
 export class AuthModule {}

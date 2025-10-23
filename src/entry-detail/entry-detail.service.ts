@@ -1,26 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEntryDetailDto } from './dto/create-entry-detail.dto';
 import { UpdateEntryDetailDto } from './dto/update-entry-detail.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { EntryDetail } from './entities/entry-detail.entity';
+import { Repository } from 'typeorm';
+import { FindByEntryDetailDto } from './dto/findByEntryDetail.dto';
 
 @Injectable()
 export class EntryDetailService {
-  create(createEntryDetailDto: CreateEntryDetailDto) {
-    return 'This action adds a new entryDetail';
-  }
+  constructor(
+    @InjectRepository(EntryDetail)
+    private entryDetailRepository: Repository<EntryDetail>,
+  ) {}
 
-  findAll() {
-    return `This action returns all entryDetail`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} entryDetail`;
-  }
-
-  update(id: number, updateEntryDetailDto: UpdateEntryDetailDto) {
-    return `This action updates a #${id} entryDetail`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} entryDetail`;
+  async findByEntry(findByEntryDetailDto: FindByEntryDetailDto) {
+    const { entryId, page, pageSize } = findByEntryDetailDto;
+    return await this.entryDetailRepository.findAndCount({
+      where: { entrada: { id: entryId } },
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      order: { id: 'DESC' },
+    });
   }
 }

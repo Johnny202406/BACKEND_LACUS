@@ -7,7 +7,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Publication]),AuthModule, UserModule],
+  imports:[TypeOrmModule.forFeature([Publication]),AuthModule],
   controllers: [PublicationController],
   providers: [PublicationService],
 })

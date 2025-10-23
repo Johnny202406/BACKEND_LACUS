@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePublicationDto } from './dto/create-publication.dto';
 import cloudinary from 'src/cloudinary';
 import { UploadApiResponse } from 'cloudinary';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Publication } from './entities/publication.entity';
-import { ILike, Repository } from 'typeorm';
+import { ILike, Not, Repository } from 'typeorm';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { UpdatePublicationDto } from './dto/MyUpdatePublication.dto';
 
@@ -24,33 +28,48 @@ export class PublicationService {
     createPublicationDto: CreatePublicationDto,
     file: Express.Multer.File,
   ) {
-    const uploadResult: UploadApiResponse = await new Promise(
-      (resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream(
-            {
-              resource_type: 'image',
-              transformation: [{ fetch_format: 'webp' }],
-            },
-            (error, uploadResult) => {
-              if (error) {
-                return reject(error);
-              }
-              return resolve(uploadResult as UploadApiResponse);
-            },
-          )
-          .end(file);
+    const publicationExists = await this.publicationRepository.findOne({
+      where: {
+        titulo: ILike(createPublicationDto.titulo.trim().toUpperCase()),
       },
-    );
-
-    const publication: Publication = this.publicationRepository.create({
-      titulo: createPublicationDto.titulo.trim(),
-      url_redireccion: createPublicationDto.url_redireccion.trim(),
-      public_id: uploadResult.public_id,
-      secure_url: uploadResult.secure_url,
     });
-    await this.publicationRepository.save(publication);
-    return `This action create a publication`;
+
+    if (publicationExists)
+      throw new ConflictException(
+        'La publicación ya existe en la base de datos.',
+      );
+    try {
+      const uploadResult: UploadApiResponse = await new Promise(
+        (resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              {
+                folder:'publication',
+                resource_type: 'image',
+                transformation: [{ fetch_format: 'webp' }],
+              },
+              (error, uploadResult) => {
+                if (error) {
+                  return reject(error);
+                }
+                return resolve(uploadResult as UploadApiResponse);
+              },
+            )
+            .end(file.buffer);
+        },
+      );
+
+      const publication: Publication = this.publicationRepository.create({
+        titulo: createPublicationDto.titulo.trim(),
+        url_redireccion: createPublicationDto.url_redireccion.trim(),
+        public_id: uploadResult.public_id,
+        secure_url: uploadResult.secure_url,
+      });
+      await this.publicationRepository.save(publication);
+      return `This action create a publication`;
+    } catch (e) {
+      throw new ConflictException('No se pudo crear la publicación');
+    }
   }
 
   async findByAdmin(findByAdminDto: FindByAdminDto) {
@@ -74,39 +93,55 @@ export class PublicationService {
     updatePublicationDto: UpdatePublicationDto,
     file?: Express.Multer.File,
   ) {
-    const publication: Publication =
-      await this.publicationRepository.findOneByOrFail({
-        id,
-      });
+    const [publication, publicationExists] = await Promise.all([
+      this.publicationRepository.findOneBy({ id }),
+      this.publicationRepository.findOne({
+        where: {
+          id: Not(id),
+          titulo: ILike(updatePublicationDto.titulo.trim().toUpperCase()),
+        },
+      }),
+    ]);
+
+    if (!publication)
+      throw new NotFoundException('La publicación no se encuentra.');
+    if (publicationExists)
+      throw new ConflictException(
+        'La publicación ya existe en la base de datos.',
+      );
     publication.titulo = updatePublicationDto.titulo.trim();
     publication.url_redireccion = updatePublicationDto.url_redireccion.trim();
 
-    if (file) {
-      const uploadResult: UploadApiResponse = await new Promise(
-        (resolve, reject) => {
-          cloudinary.uploader
-            .upload_stream(
-              {
-                public_id: publication.public_id,
-                overwrite: true,
-                invalidate: true,
-                resource_type: 'image',
-                transformation: [{ fetch_format: 'webp' }],
-              },
-              (error, uploadResult) => {
-                if (error) {
-                  return reject(error);
-                }
-                return resolve(uploadResult as UploadApiResponse);
-              },
-            )
-            .end(file);
-        },
-      );
+    try {
+      if (file) {
+        const uploadResult: UploadApiResponse = await new Promise(
+          (resolve, reject) => {
+            cloudinary.uploader
+              .upload_stream(
+                {
+                  folder:'publication',
+                  public_id: publication.public_id,
+                  overwrite: true,
+                  invalidate: true,
+                  resource_type: 'image',
+                  transformation: [{ fetch_format: 'webp' }],
+                },
+                (error, uploadResult) => {
+                  if (error) {
+                    return reject(error);
+                  }
+                  return resolve(uploadResult as UploadApiResponse);
+                },
+              )
+              .end(file.buffer);
+          },
+        );
+      }
+      await this.publicationRepository.save(publication);
+      return `This action updates a #${id} publication`;
+    } catch (e) {
+      throw new ConflictException('No se pudo actualizar la publicación');
     }
-    await this.publicationRepository.save(publication);
-
-    return `This action updates a #${id} publication`;
   }
 
   async remove(id: number) {

@@ -7,17 +7,15 @@ import { CreateProductDto } from './dto/create-product.dto';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import {
-  Brackets,
-  ILike,
-  Not,
-  Repository,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { Brackets, ILike, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { BrandService } from 'src/brand/brand.service';
 import { CategoryService } from 'src/category/category.service';
 import { UpdateProductDto } from './dto/MyUpdateProduct';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
+import { instanceToPlain } from 'class-transformer';
+import { RawProduct } from 'src/interfaces';
+import { UpdateDiscount } from './dto/updateDiscount.dto';
+import { EnabledDisabled } from './dto/enabledDisabled.dto';
 
 @Injectable()
 export class ProductService {
@@ -27,6 +25,37 @@ export class ProductService {
     private brandService: BrandService,
     private categoryService: CategoryService,
   ) {}
+
+  getBaseSelectQueryBuilder(): SelectQueryBuilder<Product> {
+    return this.productRepository
+      .createQueryBuilder('producto')
+      .leftJoinAndSelect('producto.categoria', 'categoria')
+      .leftJoinAndSelect('producto.marca', 'marca')
+      .leftJoinAndSelect('producto.imagenes', 'imagenes')
+      .leftJoin(
+        (qb) =>
+          qb
+            .from('detalle_entrada', 'de')
+            .leftJoin('entrada', 'e', 'e.id = de.id_entrada')
+            .select('de.id_producto', 'id_producto')
+            .addSelect('SUM(de.cantidad)', 'total_entradas')
+            .where('e.habilitado = true')
+            .groupBy('de.id_producto'),
+        'entradas',
+        'entradas.id_producto = producto.id',
+      )
+      .leftJoin(
+        (qb) =>
+          qb
+            .from('detalle_pedido', 'dp')
+            .select('dp.id_producto', 'id_producto')
+            .addSelect('SUM(dp.cantidad)', 'total_pedidos')
+            .groupBy('dp.id_producto'),
+        'pedidos',
+        'pedidos.id_producto = producto.id',
+      );
+  }
+
   async create(createProductDto: CreateProductDto) {
     const {
       name,
@@ -66,16 +95,48 @@ export class ProductService {
     return 'This action adds a new product';
   }
 
-  findAll() {
-    return `This action returns all product`;
+
+  async findOnlyStock(ids: number[]): Promise<RawProduct[]> {
+    const query = this.getBaseSelectQueryBuilder();
+    query
+      .where('producto.id IN (:...ids)', { ids })
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      );
+    const raws = await query.getRawMany();
+    raws.forEach((raw) => {
+      raw.stock = +raw.stock;
+    });
+    return raws as RawProduct[];
   }
 
 
-  async findOneByCode(code: string) {
-    return await this.productRepository.findOneOrFail({
-      where: { codigo: code, habilitado: true },
-      relations: ['categoria', 'marca', 'imagenes'],
+  async findOneById(id: number) {
+    return await this.productRepository.findOneBy({
+      id,
     });
+  }
+
+  async findOneWithStock(code: string) {
+    const query = this.getBaseSelectQueryBuilder();
+    query.where('producto.codigo = :code', { code });
+    query.andWhere('producto.habilitado = true');
+
+    const entitie = await query.clone().getOneOrFail();
+
+    const raw = await query
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      )
+      .getRawOne();
+
+    entitie.stock = +raw.stock;
+
+    return instanceToPlain(entitie);
   }
 
   async findByAdminWithStock(findByAdminDto: FindByAdminDto) {
@@ -89,34 +150,7 @@ export class ProductService {
       id_category = undefined,
     } = findByAdminDto;
 
-    const query = this.productRepository
-      .createQueryBuilder('producto')
-      .leftJoinAndSelect('producto.categoria', 'categoria')
-      .leftJoinAndSelect('producto.marca', 'marca');
-
-    query.leftJoin(
-      (qb) =>
-        qb
-          .from('detalle_entrada', 'de')
-          .leftJoin('entrada', 'e', 'e.id = de.id_entrada')
-          .select('de.id_producto', 'id_producto')
-          .addSelect('SUM(de.cantidad)', 'total_entradas')
-          .where('e.habilitado = true')
-          .groupBy('de.id_producto'),
-      'entradas',
-      'entradas.id_producto = producto.id',
-    );
-
-    query.leftJoin(
-      (qb) =>
-        qb
-          .from('detalle_pedido', 'dp')
-          .select('dp.id_producto', 'id_producto')
-          .addSelect('SUM(dp.cantidad)', 'total_pedidos')
-          .groupBy('dp.id_producto'),
-      'pedidos',
-      'pedidos.id_producto = producto.id',
-    );
+    const query = this.getBaseSelectQueryBuilder();
 
     if (enabled) {
       query.andWhere('producto.habilitado = :enabled', { enabled });
@@ -140,29 +174,29 @@ export class ProductService {
         { search: `%${searchByCodeOrName.trim()}%` },
       );
     }
-    const clone = query.clone();
-    const queryOther=new SelectQueryBuilder(clone)
-    queryOther.orderBy('producto.id', 'DESC');
-    const [entities, count] = await queryOther.getManyAndCount();
-
-    
-    query
-    .select('producto.id','id')
-    .addSelect(
-      'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
-      'stock',
-    );
 
     query
       .orderBy('producto.id', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize);
 
-    const raw = await query.getRawMany();
-    console.log(query.getSql());
-    console.log(raw, entities, count);
+    const [entities, count] = await query.clone().getManyAndCount();
 
-    return [raw, entities, count];
+    const raw = await query
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      )
+      .getRawMany();
+
+    entities.forEach((e) => {
+      e.stock = +raw.find((r) => r.id === e.id).stock;
+    });
+
+    console.log(entities, count);
+
+    return [instanceToPlain(entities), count];
   }
 
   async update(id: number, updateProductDto: UpdateProductDto) {
@@ -207,16 +241,16 @@ export class ProductService {
     return `This action updates a #${id} product`;
   }
 
-  async enableDisabled(id: number, enabled: boolean) {
+  async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {
     const product = await this.productRepository.findOneByOrFail({ id });
-    product.habilitado = enabled;
+    product.habilitado = enabledDisabled.enabled;
     await this.productRepository.save(product);
     return `This action enables or disables a #${id} product`;
   }
 
-  async updateDiscount(id: number, discount: number) {
+  async updateDiscount(id: number, updateDiscount: UpdateDiscount) {
     const product = await this.productRepository.findOneByOrFail({ id });
-    product.porcentaje_descuento = discount;
+    product.porcentaje_descuento = updateDiscount.discount;
     await this.productRepository.save(product);
     return `This action updates discount a #${id} product`;
   }

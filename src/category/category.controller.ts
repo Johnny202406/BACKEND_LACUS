@@ -19,6 +19,7 @@ import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { Public, Role, Roles } from 'src/auth/guards/roles.decorator';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
+import { EnabledDisabled } from './dto/enabledDisabled.dto';
 
 @Roles(Role.ADMIN)
 @UseGuards(AuthGuard, IsAdminGuard)
@@ -64,7 +65,7 @@ export class CategoryController {
   }
 
   @Patch('enabledDisabled/:id')
-  async enabledDisabled(@Param('id') id: string, @Body() enabled: boolean) {
-    return await this.categoryService.enabledDisabled(+id, enabled);
+  async enabledDisabled(@Param('id') id: string, @Body() enabledDisabled: EnabledDisabled) {
+    return await this.categoryService.enabledDisabled(+id, enabledDisabled);
   }
 }

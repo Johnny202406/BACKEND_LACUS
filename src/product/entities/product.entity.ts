@@ -1,3 +1,4 @@
+import { Expose } from 'class-transformer';
 import { Brand } from 'src/brand/entities/brand.entity';
 import { Category } from 'src/category/entities/category.entity';
 import { EntryDetail } from 'src/entry-detail/entities/entry-detail.entity';
@@ -51,6 +52,13 @@ export class Product {
   @Column({ type: 'int', default: 0, nullable: false })
   porcentaje_descuento: number;
 
+  @Expose({ name: 'precio_final' })
+  get precio_final(): number {
+    return +(this.precio * ((100 - this.porcentaje_descuento) / 100)).toFixed(
+      2,
+    );
+  }
+
   @ManyToOne(() => Category, (category) => category.id, {
     nullable: false,
     eager: false,
@@ -77,4 +85,5 @@ export class Product {
     eager: false,
   })
   detallesPedido: EntryDetail[];
+  stock: any;
 }

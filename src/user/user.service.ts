@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayload } from 'google-auth-library';
 import { UpdateUserMyDto } from './dto/update-user-my.dto';
 import { FindAllUserDto } from './dto/findAll-user.dto';
+import { EnabledDisabled } from './dto/enabledDisabled.dto';
 
 @Injectable()
 export class UserService {
@@ -24,10 +25,18 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async enableDisable(id: number, value: boolean) {
-    const user = await this.userRepository.findOneByOrFail({ id });
-    user.habilitado = value;
-    return await this.userRepository.save(user);
+  async findOneById(id: number): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { id },
+      relations: ['tipo_usuario'],
+    });
+  }
+
+  async findOneBySub(sub: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { sub },
+      relations: ['tipo_usuario'],
+    });
   }
 
   async findAll(findAllUserDto: FindAllUserDto): Promise<[User[], number]> {
@@ -48,25 +57,24 @@ export class UserService {
     });
   }
 
-  async findOneById(id: number): Promise<User | null> {
-    return await this.userRepository.findOne({
-      where: { id },
-      relations: ['tipo_usuario'],
+  async update(id: number, updateUserMyDto: UpdateUserMyDto) {
+    const user = await this.userRepository.findOneByOrFail({
+      id,
     });
-  }
 
-  async findOneBySub(sub: string): Promise<User | null> {
-    return await this.userRepository.findOne({
-      where: { sub },
-      relations: ['tipo_usuario'],
-    });
-  }
+    user.nombre = updateUserMyDto.nombre.trim().toUpperCase();
+    user.apellido = updateUserMyDto.apellido.trim().toUpperCase();
+    user.dni = updateUserMyDto.dni.trim().toUpperCase();
+    user.numero = updateUserMyDto.numero.trim().toUpperCase();
 
-  update(id: string, updateUserDto: UpdateUserMyDto) {
+    await this.userRepository.save(user);
+
     return `This action updates a #${id} user`;
   }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  
+  async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {
+    const user = await this.userRepository.findOneByOrFail({ id });
+    user.habilitado = enabledDisabled.enabled;
+    return await this.userRepository.save(user);
   }
 }

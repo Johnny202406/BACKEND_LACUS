@@ -18,6 +18,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateBrandDto } from './dto/MyUpdateBrand.dto';
 import { MyParseFilePipeBuilder } from 'src/MyParseFilePipeBuilder';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
+import { EnabledDisabled } from './dto/enabledDisabled.dto';
 
 @Roles(Role.ADMIN)
 @UseGuards(AuthGuard, IsAdminGuard)
@@ -63,7 +64,7 @@ export class BrandController {
   }
 
   @Patch('enabledDisabled/:id')
-  async enabledDisabled(@Param('id') id: string, @Body() enabled: boolean) {
-    return await this.brandService.enabledDisabled(+id, enabled);
+  async enabledDisabled(@Param('id') id: string, @Body() enabledDisabled: EnabledDisabled) {
+    return await this.brandService.enabledDisabled(+id, enabledDisabled);
   }
 }
