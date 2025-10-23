@@ -67,9 +67,9 @@ export class UserService {
     user.dni = updateUserMyDto.dni.trim().toUpperCase();
     user.numero = updateUserMyDto.numero.trim().toUpperCase();
 
-    await this.userRepository.save(user);
 
-    return `This action updates a #${id} user`;
+    return await this.userRepository.save(user);
+     
   }
   
   async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {

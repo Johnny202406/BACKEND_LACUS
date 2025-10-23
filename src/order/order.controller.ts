@@ -12,7 +12,7 @@ import {
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { FindByUserDto } from './dto/findByUser.dto';
+import { FindByClientDto } from './dto/findByClient.dto';
 import { Order } from './entities/order.entity';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Role, Roles } from 'src/auth/guards/roles.decorator';
@@ -40,9 +40,9 @@ export class OrderController {
   @Get('findByClient/:id')
   async findByClient(
     @Param() id: string,
-    @Query() findByUserDto: FindByUserDto,
+    @Query() findByClientDto: FindByClientDto,
   ): Promise<[Order[], number]> {
-    return await this.orderService.findByUser(+id, findByUserDto);
+    return await this.orderService.findByClient(+id, findByClientDto);
   }
   @Roles(Role.ADMIN)
   @UseGuards(IsAdminGuard)

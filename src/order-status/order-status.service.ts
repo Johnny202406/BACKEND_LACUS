@@ -20,8 +20,9 @@ export class OrderStatusService {
     return await this.orderStatusRepository.findOneBy({ id });
   }
 
-  findAll() {
-    return `This action returns all orderStatus`;
+
+  async findAll() {
+    return await this.orderStatusRepository.find();
   }
 
 

@@ -13,13 +13,14 @@ export class IsAdminGuard implements CanActivate {
     const isPublic = this.reflector.get(Public, context.getHandler());
     if (isPublic) return true;
     // busca metadata  primero en el metodo y luego en la clase
-    const role = this.reflector.getAllAndOverride(Role, [
+    const role = this.reflector.getAllAndOverride<Role>('Role', [
       context.getHandler(),
       context.getClass(),
     ]);
 
     const request = context.switchToHttp().getRequest() as Request;
     const userDB = request['user'] as User;
+    
     if (role !== userDB.tipo_usuario.nombre) return false;
     return true;
   }

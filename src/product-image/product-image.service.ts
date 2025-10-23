@@ -6,10 +6,12 @@ import { Repository } from 'typeorm';
 import cloudinary from 'src/cloudinary';
 import { ProductService } from 'src/product/product.service';
 import { UploadApiResponse } from 'cloudinary';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductImageService {
   constructor(
+     @InjectRepository(ProductImage)
     private productImageRepository: Repository<ProductImage>,
     private productService: ProductService,
   ) {}

@@ -12,9 +12,9 @@ export class OrderStatusController {
     return this.orderStatusService.create(createOrderStatusDto);
   }
 
-  @Get()
-  findAll() {
-    return this.orderStatusService.findAll();
+  @Get('findAll')
+  async findAll() {
+    return await this.orderStatusService.findAll();
   }
 
   @Get(':id')

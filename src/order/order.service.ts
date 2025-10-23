@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { FindByUserDto } from './dto/findByUser.dto';
+import { FindByClientDto } from './dto/findByClient.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Between,
@@ -34,9 +34,9 @@ export class OrderService {
     return `This action returns all order`;
   }
 
-  async findByUser(
+  async findByClient(
     id: number,
-    findAllByUserDto: FindByUserDto,
+    findByClientDto: FindByClientDto,
   ): Promise<[Order[], number]> {
     const {
       page,
@@ -47,7 +47,7 @@ export class OrderService {
       orderStatus = undefined,
       deliveryType = undefined,
       paymentMethod = undefined,
-    } = findAllByUserDto;
+    } = findByClientDto;
     const where: any = {
       id_usuario: id,
       ...(searchByCode && { correo: ILike(`%${searchByCode.trim()}%`) }),

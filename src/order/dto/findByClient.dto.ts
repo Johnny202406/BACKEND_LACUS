@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { PageSizeEnum } from 'src/Enums';
 
-export class FindByUserDto {
+export class FindByClientDto {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()

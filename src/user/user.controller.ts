@@ -26,8 +26,8 @@ export class UserController {
   @Roles(Role.CLIENT)
   @UseGuards(IsClientGuard)
   @Patch('update/:id')
-  update(@Param('id') id: string, @Body() updateMyUserDto: UpdateUserMyDto) {
-    return this.userService.update(+id, updateMyUserDto);
+  async update(@Param('id') id: string, @Body() updateMyUserDto: UpdateUserMyDto) {
+    return await this.userService.update(+id, updateMyUserDto);
   }
 
   @Roles(Role.ADMIN)

@@ -19,7 +19,7 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 36, unique: true })
+  @Column({ type: 'uuid', unique: true })
   codigo: string;
 
   @Column({ type: 'date', nullable: false })
@@ -32,7 +32,7 @@ export class Order {
   total: number;
 
   @Column({ type: 'point', nullable: false })
-  direccion: string;
+  direccion: { x: number; y: number };
 
   @Column({ type: 'date', nullable: true })
   ultima_fecha: string;
