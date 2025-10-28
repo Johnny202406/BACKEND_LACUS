@@ -54,7 +54,7 @@ export class BrandService {
               {
                 folder: 'brand',
                 resource_type: 'image',
-                transformation: [{ fetch_format: 'webp' }],
+                format: 'webp',
               },
               (error, uploadResult) => {
                 if (error) {
@@ -89,7 +89,7 @@ export class BrandService {
       ...(searchByName && {
         nombre: ILike(`%${searchByName.trim()}%`),
       }),
-      ...(enabled && {
+      ...(enabled !== undefined && {
         habilitado: enabled,
       }),
     };
@@ -129,12 +129,11 @@ export class BrandService {
             cloudinary.uploader
               .upload_stream(
                 {
-                  folder: 'brand',
                   public_id: brand.public_id,
                   overwrite: true,
                   invalidate: true,
                   resource_type: 'image',
-                  transformation: [{ fetch_format: 'webp' }],
+                  format: 'webp',
                 },
                 (error, uploadResult) => {
                   if (error) {
@@ -146,7 +145,10 @@ export class BrandService {
               .end(file.buffer);
           },
         );
+        brand.public_id = uploadResult.public_id;
+        brand.secure_url = uploadResult.secure_url;
       }
+
       await this.brandRepository.save(brand);
     } catch (e) {
       throw new ConflictException('No se pudo actualizar la marca.');

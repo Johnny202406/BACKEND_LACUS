@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PaymentMethodService } from './payment-method.service';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('payment-method')
 export class PaymentMethodController {
   constructor(private readonly paymentMethodService: PaymentMethodService) {}
@@ -12,9 +14,9 @@ export class PaymentMethodController {
     return this.paymentMethodService.create(createPaymentMethodDto);
   }
 
-  @Get()
-  findAll() {
-    return this.paymentMethodService.findAll();
+  @Get("findAll")
+  async findAll() {
+    return await this.paymentMethodService.findAll();
   }
 
   @Get(':id')

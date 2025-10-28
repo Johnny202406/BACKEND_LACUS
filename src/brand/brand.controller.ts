@@ -16,7 +16,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UpdateBrandDto } from './dto/MyUpdateBrand.dto';
-import { MyParseFilePipeBuilder } from 'src/MyParseFilePipeBuilder';
+import { MyParseFilePipeBuilder, MyParseFilePipeBuilderOptional } from 'src/MyParseFilePipeBuilder';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
 
@@ -47,7 +47,7 @@ export class BrandController {
     return await this.brandService.create(createBrandDto, file);
   }
 
-  @Get('findByAdmin')
+  @Post('findByAdmin')
   async findByAdmin(@Body() findByAdminDto: FindByAdminDto) {
     return await this.brandService.findByAdmin(findByAdminDto);
   }
@@ -57,7 +57,7 @@ export class BrandController {
   update(
     @Param('id') id: string,
     @Body() updateBrandDto: UpdateBrandDto,
-    @UploadedFile(MyParseFilePipeBuilder)
+    @UploadedFile(MyParseFilePipeBuilderOptional)
     file?: Express.Multer.File,
   ) {
     return this.brandService.update(+id, updateBrandDto, file);
