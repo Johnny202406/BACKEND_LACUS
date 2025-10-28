@@ -13,7 +13,7 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MyParseFilePipeBuilder } from 'src/MyParseFilePipeBuilder';
+import { MyParseFilePipeBuilder, MyParseFilePipeBuilderOptional } from 'src/MyParseFilePipeBuilder';
 import { UpdateCategoryDto } from './dto/MyUpdateCategory.dto';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { Public, Role, Roles } from 'src/auth/guards/roles.decorator';
@@ -48,20 +48,20 @@ export class CategoryController {
     return await this.categoryService.create(createCategoryDto, file);
   }
 
-  @Get('findByAdmin')
+  @Post('findByAdmin')
   async findByAdmin(@Body() findByAdminDto: FindByAdminDto) {
     return await this.categoryService.findByAdmin(findByAdminDto);
   }
 
   @Patch('update/:id')
   @UseInterceptors(FileInterceptor('file'))
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateCategoryDto: UpdateCategoryDto,
-    @UploadedFile(MyParseFilePipeBuilder)
+    @UploadedFile(MyParseFilePipeBuilderOptional)
     file?: Express.Multer.File,
   ) {
-    return this.categoryService.update(+id, updateCategoryDto, file);
+    return await this.categoryService.update(+id, updateCategoryDto, file);
   }
 
   @Patch('enabledDisabled/:id')

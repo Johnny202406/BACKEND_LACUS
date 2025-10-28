@@ -72,7 +72,7 @@ export class BrandService {
         secure_url: uploadResult.secure_url,
       });
       await this.brandRepository.save(brand);
-      return `This action creates a new brand`;
+      return [`This action creates a new brand`];
     } catch (e) {
       throw new ConflictException('No se pudo crear la marca.');
     }
@@ -154,7 +154,7 @@ export class BrandService {
       throw new ConflictException('No se pudo actualizar la marca.');
     }
 
-    return `This action updates a #${id} brand`;
+    return [`This action updates a #${id} brand`];
   }
 
   async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {

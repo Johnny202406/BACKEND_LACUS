@@ -18,7 +18,7 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   async findAll() {
     return await this.categoryRepository.findAndCount({
@@ -55,9 +55,9 @@ export class CategoryService {
           cloudinary.uploader
             .upload_stream(
               {
-                folder:'category',
+                folder: 'category',
                 resource_type: 'image',
-                transformation: [{ fetch_format: 'webp' }],
+                format: 'webp'
               },
               (error, uploadResult) => {
                 if (error) {
@@ -76,7 +76,7 @@ export class CategoryService {
         secure_url: uploadResult.secure_url,
       });
       await this.categoryRepository.save(category);
-      return `This action creates a new category`;
+      return [`This action creates a new category`];
     } catch (e) {
       throw new ConflictException('No se pudo crear la categoría.');
     }
@@ -93,7 +93,7 @@ export class CategoryService {
       ...(searchByName && {
         nombre: ILike(`%${searchByName.trim()}%`),
       }),
-      ...(enabled && {
+      ...(enabled !== undefined && {
         habilitado: enabled,
       }),
     };
@@ -129,37 +129,38 @@ export class CategoryService {
     category.nombre = updateCategoryDto.name.trim().toUpperCase();
 
     try {
-       if (file) {
-      const uploadResult: UploadApiResponse = await new Promise(
-        (resolve, reject) => {
-          cloudinary.uploader
-            .upload_stream(
-              {
-                folder:'category',
-                public_id: category.public_id,
-                overwrite: true,
-                invalidate: true,
-                resource_type: 'image',
-                transformation: [{ fetch_format: 'webp' }],
-              },
-              (error, uploadResult) => {
-                if (error) {
-                  return reject(error);
-                }
-                return resolve(uploadResult as UploadApiResponse);
-              },
-            )
-            .end(file.buffer);
-        },
-      );
-    }
-    await this.categoryRepository.save(category);
+      if (file) {
+        const uploadResult: UploadApiResponse = await new Promise(
+          (resolve, reject) => {
+            cloudinary.uploader
+              .upload_stream(
+                {
+                  public_id: category.public_id,
+                  overwrite: true,
+                  invalidate: true,
+                  resource_type: 'image',
+                  format: 'webp'
+                },
+                (error, uploadResult) => {
+                  if (error) {
+                    return reject(error);
+                  }
+                  return resolve(uploadResult as UploadApiResponse);
+                },
+              )
+              .end(file.buffer);
+          },
+        );
+        category.public_id = uploadResult.public_id;
+        category.secure_url = uploadResult.secure_url;
+      }
+      await this.categoryRepository.save(category);
 
-    return `This action updates a #${id} category`;
     } catch (e) {
       throw new ConflictException('No se pudo actualizar la categoría.');
     }
-   
+    return [`This action updates a #${id} category`];
+
   }
 
   async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {

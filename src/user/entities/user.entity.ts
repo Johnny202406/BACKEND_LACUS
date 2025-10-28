@@ -19,10 +19,10 @@ export class User {
   @Column({ type: 'varchar', length: 36, unique: true })
   sub: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   nombre: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   apellido: string;
 
   @Column({ type: 'varchar', length: 15, nullable: true })
@@ -48,7 +48,7 @@ export class User {
     eager: false,
     nullable: false,
   })
-  carrito:Cart
+  carrito: Cart
 
   @OneToMany(() => Order, (order) => order.usuario, {
     eager: false,

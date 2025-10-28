@@ -54,13 +54,13 @@ export class BrandController {
 
   @Patch('update/:id')
   @UseInterceptors(FileInterceptor('file'))
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateBrandDto: UpdateBrandDto,
     @UploadedFile(MyParseFilePipeBuilderOptional)
     file?: Express.Multer.File,
   ) {
-    return this.brandService.update(+id, updateBrandDto, file);
+    return await this.brandService.update(+id, updateBrandDto, file);
   }
 
   @Patch('enabledDisabled/:id')
