@@ -163,6 +163,6 @@ export class BrandService {
     });
     brand.habilitado = enabledDisabled.enabled;
     await this.brandRepository.save(brand);
-    return `This action enables or disables a #${id} brand`;
+    return [`This action enables or disables a #${id} brand`];
   }
 }

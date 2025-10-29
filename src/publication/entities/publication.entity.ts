@@ -9,7 +9,7 @@ export class Publication {
   titulo: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  url_redireccion: string;
+  url_redireccion: string|null;
 
   @Column({ type: 'varchar', length: 255, nullable: false })
   public_id: string;

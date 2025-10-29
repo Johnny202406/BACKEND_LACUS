@@ -16,7 +16,7 @@ import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Public, Role, Roles } from 'src/auth/guards/roles.decorator';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MyParseFilePipeBuilder } from 'src/MyParseFilePipeBuilder';
+import { MyParseFilePipeBuilder, MyParseFilePipeBuilderOptional } from 'src/MyParseFilePipeBuilder';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { UpdatePublicationDto } from './dto/MyUpdatePublication.dto';
 
@@ -43,7 +43,7 @@ export class PublicationController {
     return await this.publicationService.create(createPublicationDto, file);
   }
 
-  @Get('findByAdmin')
+  @Post('findByAdmin')
   async findByAdmin(@Body() findByAdminDto: FindByAdminDto) {
     return await this.publicationService.findByAdmin(findByAdminDto);
   }
@@ -53,7 +53,7 @@ export class PublicationController {
   async update(
     @Param('id') id: string,
     @Body() updatePublicationDto: UpdatePublicationDto,
-    @UploadedFile(MyParseFilePipeBuilder)
+    @UploadedFile(MyParseFilePipeBuilderOptional)
     file?: Express.Multer.File,
   ) {
     return await this.publicationService.update(+id, updatePublicationDto, file);

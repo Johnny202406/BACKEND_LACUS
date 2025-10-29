@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreatePublicationDto } from './dto/create-publication.dto';
 import cloudinary from 'src/cloudinary';
-import { UploadApiResponse } from 'cloudinary';
+import { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Publication } from './entities/publication.entity';
 import { ILike, Not, Repository } from 'typeorm';
@@ -46,11 +46,11 @@ export class PublicationService {
               {
                 folder:'publication',
                 resource_type: 'image',
-                transformation: [{ fetch_format: 'webp' }],
+                format: 'webp',
               },
               (error, uploadResult) => {
                 if (error) {
-                  return reject(error);
+                  return reject(error as UploadApiErrorResponse);
                 }
                 return resolve(uploadResult as UploadApiResponse);
               },
@@ -60,13 +60,13 @@ export class PublicationService {
       );
 
       const publication: Publication = this.publicationRepository.create({
-        titulo: createPublicationDto.titulo.trim(),
-        url_redireccion: createPublicationDto.url_redireccion.trim(),
+        titulo: createPublicationDto.titulo.trim().toUpperCase(),
+        url_redireccion: createPublicationDto.url_redireccion.trim()||null,
         public_id: uploadResult.public_id,
         secure_url: uploadResult.secure_url,
       });
       await this.publicationRepository.save(publication);
-      return `This action create a publication`;
+      return [`This action create a publication`];
     } catch (e) {
       throw new ConflictException('No se pudo crear la publicación');
     }
@@ -119,16 +119,15 @@ export class PublicationService {
             cloudinary.uploader
               .upload_stream(
                 {
-                  folder:'publication',
                   public_id: publication.public_id,
                   overwrite: true,
                   invalidate: true,
                   resource_type: 'image',
-                  transformation: [{ fetch_format: 'webp' }],
+                  format: 'webp',
                 },
                 (error, uploadResult) => {
                   if (error) {
-                    return reject(error);
+                    return reject(error as UploadApiErrorResponse);
                   }
                   return resolve(uploadResult as UploadApiResponse);
                 },
@@ -136,12 +135,15 @@ export class PublicationService {
               .end(file.buffer);
           },
         );
+        publication.public_id = uploadResult.public_id;
+        publication.secure_url = uploadResult.secure_url;
       }
       await this.publicationRepository.save(publication);
-      return `This action updates a #${id} publication`;
     } catch (e) {
       throw new ConflictException('No se pudo actualizar la publicación');
     }
+      return [`This action updates a #${id} publication`];
+
   }
 
   async remove(id: number) {
@@ -156,6 +158,6 @@ export class PublicationService {
       },
     );
     await this.publicationRepository.remove(publication);
-    return `This action removes a #${id} publication`;
+    return [`This action removes a #${id} publication`];
   }
 }

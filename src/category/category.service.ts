@@ -169,6 +169,6 @@ export class CategoryService {
     });
     category.habilitado = enabledDisabled.enabled;
     await this.categoryRepository.save(category);
-    return `This action enables or disables a #${id} category`;
+    return [`This action enables or disables a #${id} category`];
   }
 }
