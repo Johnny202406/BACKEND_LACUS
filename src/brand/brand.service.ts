@@ -21,12 +21,12 @@ export class BrandService {
   ) {}
 
   async findAll() {
-    return await this.brandRepository.findAndCount({
+    return await this.brandRepository.find({
       order: { id: 'DESC' },
     });
   }
   async findAllEnabled() {
-    return await this.brandRepository.findAndCount({
+    return await this.brandRepository.find({
       where: { habilitado: true },
       order: { id: 'DESC' },
     });

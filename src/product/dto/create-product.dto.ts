@@ -5,7 +5,9 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -23,12 +25,19 @@ export class CreateProductDto {
   @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false })
   @IsNotEmpty()
   @IsPositive()
-  weight_kg: number;
+  price: number;
+  
+  @IsInt()
+  @IsOptional()
+  @IsPositive()
+  @Min(1)
+  @Max(100)
+  discount: number;
 
   @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false })
   @IsNotEmpty()
   @IsPositive()
-  price: number;
+  weight_kg: number;
 
   @IsInt()
   @IsNotEmpty()

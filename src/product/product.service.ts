@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
-
+import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Brackets, ILike, Not, Repository, SelectQueryBuilder } from 'typeorm';
@@ -60,8 +60,9 @@ export class ProductService {
     const {
       name,
       description = undefined,
-      weight_kg,
       price,
+      discount = undefined,
+      weight_kg,
       id_category,
       id_brand,
     } = createProductDto;
@@ -83,18 +84,19 @@ export class ProductService {
       throw new NotFoundException('La marca no se encuentra disponible.');
 
     const product = this.productRepository.create({
+      codigo: uuidv4(),
       nombre: name.trim().toUpperCase(),
       descripcion: description ? description.trim() : undefined,
       peso_kg: weight_kg,
       precio: price,
+      porcentaje_descuento: discount ? discount : undefined,
       categoria: category,
       marca: brand,
     });
     await this.productRepository.save(product);
 
-    return 'This action adds a new product';
+    return ['This action adds a new product'];
   }
-
 
   async findOnlyStock(ids: number[]): Promise<RawProduct[]> {
     const query = this.getBaseSelectQueryBuilder();
@@ -111,7 +113,6 @@ export class ProductService {
     });
     return raws as RawProduct[];
   }
-
 
   async findOneById(id: number) {
     return await this.productRepository.findOneBy({
@@ -203,8 +204,9 @@ export class ProductService {
     const {
       name,
       description = undefined,
-      weight_kg,
       price,
+      discount = undefined,
+      weight_kg,
       id_category,
       id_brand,
     } = updateProductDto;
@@ -233,19 +235,21 @@ export class ProductService {
     description ? (product.descripcion = description.trim()) : undefined;
     product.peso_kg = weight_kg;
     product.precio = price;
+    discount?(product.porcentaje_descuento=discount):undefined
     product.categoria = category;
     product.marca = brand;
 
+
     await this.productRepository.save(product);
 
-    return `This action updates a #${id} product`;
+    return [`This action updates a #${id} product`];
   }
 
   async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {
     const product = await this.productRepository.findOneByOrFail({ id });
     product.habilitado = enabledDisabled.enabled;
     await this.productRepository.save(product);
-    return `This action enables or disables a #${id} product`;
+    return [`This action enables or disables a #${id} product`];
   }
 
   async updateDiscount(id: number, updateDiscount: UpdateDiscount) {

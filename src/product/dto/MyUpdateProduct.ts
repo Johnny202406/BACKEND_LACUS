@@ -5,7 +5,9 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  Max,
   MaxLength,
+  Min,
 } from 'class-validator';
 
 export class UpdateProductDto {
@@ -29,6 +31,13 @@ export class UpdateProductDto {
   @IsNotEmpty()
   @IsPositive()
   price: number;
+
+  @IsInt()
+  @IsOptional()
+  @IsPositive()
+  @Min(1)
+  @Max(100)
+  discount: number;
 
   @IsInt()
   @IsNotEmpty()

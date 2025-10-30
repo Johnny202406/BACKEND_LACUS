@@ -38,9 +38,7 @@ export class Product {
   peso_kg: number;
 
   @Column({
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
+    type: 'float',
     default: 0,
     nullable: false,
   })
@@ -85,5 +83,6 @@ export class Product {
     eager: false,
   })
   detallesPedido: EntryDetail[];
-  stock: any;
+
+  stock:number
 }

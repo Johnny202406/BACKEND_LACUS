@@ -71,8 +71,7 @@ export class ProductImageService {
     try {
       await Promise.all(uploadPromises);
 
-      // return await this.productService.findOneById(product_id);
-      return 'Imagenes de producto creaod correctamente';
+      return ['Imagenes de producto creados correctamente'];
     } catch (err) {
       throw new Error(`Error al subir imágenes: ${err}`);
     }
@@ -94,12 +93,11 @@ export class ProductImageService {
           cloudinary.uploader
             .upload_stream(
               {
-                folder: 'product',
                 public_id: productImage.public_id,
                 overwrite: true,
                 invalidate: true,
                 resource_type: 'image',
-                transformation: [{ fetch_format: 'webp' }],
+                format:'webp'
               },
               (error, uploadResult) => {
                 if (error) {
@@ -112,10 +110,15 @@ export class ProductImageService {
         },
       );
 
-      return `This action updates a #${id} productImage`;
+      productImage.public_id = uploadResult.public_id;
+      productImage.secure_url = uploadResult.secure_url;
+      await this.productImageRepository.save(productImage);
+
     } catch (e) {
-      throw new ConflictException('No se pudo actualizar la publicación');
+      throw new ConflictException('No se pudo actualizar la imagen de producto');
     }
+      return [`This action updates a #${id} productImage`];
+
   }
   async remove(id: number) {
     const productImage = await this.productImageRepository.findOneByOrFail({
@@ -130,9 +133,10 @@ export class ProductImageService {
         },
       );
       await this.productImageRepository.remove(productImage);
-      return `This action removes a #${productImage.id} publication`;
+      
     } catch (error) {
       throw new Error(`No se pudo eliminar la imagen #${productImage.id}`);
     }
+    return [`This action removes a #${productImage.id} publication`];
   }
 }

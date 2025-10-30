@@ -4,8 +4,8 @@ import { ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayload } from 'google-auth-library';
 import { UpdateUserMyDto } from './dto/update-user-my.dto';
-import { FindAllUserDto } from './dto/findAll-user.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
+import { FindByAdminDto } from './dto/findByAdmin.dto';
 
 @Injectable()
 export class UserService {
@@ -39,8 +39,13 @@ export class UserService {
     });
   }
 
-  async findAll(findAllUserDto: FindAllUserDto): Promise<[User[], number]> {
-    const { page, pageSize, searchByEmail, enabled } = findAllUserDto;
+  async findByAdmin(findByAdminDto: FindByAdminDto): Promise<[User[], number]> {
+    const {
+      page,
+      pageSize,
+      searchByEmail = undefined,
+      enabled = undefined,
+    } = findByAdminDto;
     const where: any = {
       ...(searchByEmail && { correo: ILike(`%${searchByEmail}%`) }),
       ...(enabled !== undefined && { habilitado: enabled }),
@@ -50,10 +55,12 @@ export class UserService {
     // no puedes desestructurar con el spread operator (...) un boolean x ejemplo
     // explicación ya que me puedo olvidar jjsjs
     return await this.userRepository.findAndCount({
-      where: where,
+      where: {
+        ...where,
+        tipo_usuario: { id: 2 },
+      },
       take: pageSize,
       skip: (page - 1) * pageSize,
-      relations: ['tipo_usuario'],
     });
   }
 
@@ -67,14 +74,13 @@ export class UserService {
     user.dni = updateUserMyDto.dni.trim().toUpperCase();
     user.numero = updateUserMyDto.numero.trim().toUpperCase();
 
-
     return await this.userRepository.save(user);
-     
   }
-  
+
   async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {
     const user = await this.userRepository.findOneByOrFail({ id });
     user.habilitado = enabledDisabled.enabled;
-    return await this.userRepository.save(user);
+    await this.userRepository.save(user);
+    return [`This action enables or disables a #${id} user`];
   }
 }

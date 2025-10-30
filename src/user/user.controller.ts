@@ -7,8 +7,8 @@ import { IsClientGuard } from 'src/auth/guards/is-client.guard';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { Role, Roles } from 'src/auth/guards/roles.decorator';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
-import { FindAllUserDto } from './dto/findAll-user.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
+import { FindByAdminDto } from './dto/findByAdmin.dto';
 
 
 @Controller('user')
@@ -18,9 +18,9 @@ export class UserController {
 
   @Roles(Role.ADMIN)
   @UseGuards(IsAdminGuard)
-  @Get('findAll')
-  async findAll(@Param() findAllUserDto: FindAllUserDto) {
-    return await this.userService.findAll(findAllUserDto);
+  @Post('findByAdmin')
+  async findByAdmin(@Body() findByAdminDto: FindByAdminDto) {
+    return await this.userService.findByAdmin(findByAdminDto);
   }
 
   @Roles(Role.CLIENT)
@@ -33,8 +33,8 @@ export class UserController {
   @Roles(Role.ADMIN)
   @UseGuards(IsAdminGuard)
   @Patch('enabledDisabled/:id')
-  enabledDisable(@Param('id') id: string, @Body() enabledDisabled: EnabledDisabled) {
-    return this.userService.enabledDisabled(+id, enabledDisabled);
+  async enabledDisable(@Param('id') id: string, @Body() enabledDisabled: EnabledDisabled) {
+    return await this.userService.enabledDisabled(+id, enabledDisabled);
   }
 
   

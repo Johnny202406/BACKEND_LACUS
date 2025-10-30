@@ -6,7 +6,7 @@ export class DeliveryType {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
+  @Column({ type: 'varchar', length: 50, unique: true, nullable: false,default: 'Sin nombre' })
   nombre: string;
 
   @OneToMany(() => Order, (order) => order.tipo_entrega, {

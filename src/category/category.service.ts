@@ -21,12 +21,12 @@ export class CategoryService {
   ) { }
 
   async findAll() {
-    return await this.categoryRepository.findAndCount({
+    return await this.categoryRepository.find({
       order: { id: 'DESC' },
     });
   }
   async findAllEnabled() {
-    return await this.categoryRepository.findAndCount({
+    return await this.categoryRepository.find({
       where: { habilitado: true },
       order: { id: 'DESC' },
     });

@@ -36,7 +36,7 @@ export class ProductController {
     return await this.productService.findOneWithStock(code);
   }
 
-  @Get('findByAdminWithStock')
+  @Post('findByAdminWithStock')
   async findByAdminWithStock(@Body() findByAdminDto: FindByAdminDto) {
     return await this.productService.findByAdminWithStock(findByAdminDto);
   }
@@ -52,11 +52,12 @@ export class ProductController {
   @Patch('enabledDisabled/:id')
   async enabledDisabled(
     @Param('id') id: string,
-    enabledDisabled: EnabledDisabled,
+    @Body() enabledDisabled: EnabledDisabled,
   ) {
     return await this.productService.enabledDisabled(+id, enabledDisabled);
   }
 
+  // este ya no
   @Patch('updateDiscount/:id')
   async updateDiscount(
     @Param('id') id: string,
