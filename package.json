@@ -20,9 +20,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "git": "git add . && git commit -m \"update\" && git push backend main",
     "pull": "git pull backend main && npm install",
-     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d ./src/data-source.ts",
-  "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/AutoMigration",
-  "migration:run": "npm run typeorm -- migration:run",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d ./src/data-source.ts",
+    "migration:generate": "npm run typeorm -- migration:generate ./src/migrations/AutoMigration",
+    "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert"
   },
   "dependencies": {

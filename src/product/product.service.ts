@@ -7,7 +7,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Brackets, ILike, Not, Repository, SelectQueryBuilder } from 'typeorm';
+import { Between, Brackets, ILike, Not, Repository, SelectQueryBuilder } from 'typeorm';
 import { BrandService } from 'src/brand/brand.service';
 import { CategoryService } from 'src/category/category.service';
 import { UpdateProductDto } from './dto/MyUpdateProduct';
@@ -16,6 +16,7 @@ import { instanceToPlain } from 'class-transformer';
 import { RawProduct } from 'src/interfaces';
 import { UpdateDiscount } from './dto/updateDiscount.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
+import { FindByAdminForEntryDto } from './dto/findByAdminForEntry.dto';
 
 @Injectable()
 export class ProductService {
@@ -24,7 +25,7 @@ export class ProductService {
     private productRepository: Repository<Product>,
     private brandService: BrandService,
     private categoryService: CategoryService,
-  ) {}
+  ) { }
 
   getBaseSelectQueryBuilder(): SelectQueryBuilder<Product> {
     return this.productRepository
@@ -54,6 +55,37 @@ export class ProductService {
         'pedidos',
         'pedidos.id_producto = producto.id',
       );
+  }
+  async findByAdminForEntry(findByAdminForEntry: FindByAdminForEntryDto) {
+    const {
+      page,
+      pageSize,
+      searchByCodeOrName = undefined,
+      enabled = undefined,
+      discount = undefined,
+      id_brand = undefined,
+      id_category = undefined,
+    } = findByAdminForEntry;
+    const where: any = {
+      ...(searchByCodeOrName && {
+        nombre: ILike(`%${searchByCodeOrName.trim()}%`),
+      }),
+      ...(enabled !== undefined && {
+        habilitado: enabled,
+      }),
+      ...(discount !== undefined && {
+        porcentaje_descuento: Between(1, 100),
+      }),
+      ...(id_brand && { marca: { id: id_brand } }),
+      ...(id_category && { categoria: { id: id_category } }),
+
+    };
+    return await this.productRepository.findAndCount({
+      where: where,
+      take: pageSize,
+      skip: (page - 1) * pageSize,
+      order: { id: 'DESC' },
+    });
   }
 
   async create(createProductDto: CreateProductDto) {
@@ -235,7 +267,7 @@ export class ProductService {
     description ? (product.descripcion = description.trim()) : undefined;
     product.peso_kg = weight_kg;
     product.precio = price;
-    discount?(product.porcentaje_descuento=discount):undefined
+    discount ? (product.porcentaje_descuento = discount) : undefined
     product.categoria = category;
     product.marca = brand;
 

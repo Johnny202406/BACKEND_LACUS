@@ -17,6 +17,7 @@ import { UpdateDiscount } from './dto/updateDiscount.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
+import { FindByAdminForEntryDto } from './dto/findByAdminForEntry.dto';
 
 @Roles(Role.ADMIN)
 @UseGuards(AuthGuard, IsAdminGuard)
@@ -29,7 +30,10 @@ export class ProductController {
     return await this.productService.create(createProductDto);
   }
 
-
+  @Post('findByAdminForEntry')
+  async findByAdminForEntry(@Body() findByAdminForEntry:FindByAdminForEntryDto){
+    return await this.productService.findByAdminForEntry(findByAdminForEntry)
+  }
   @Public()
   @Get('findOneWithStock/:code')
   async findOneByAdminWithStock(@Param('code') code: string) {
