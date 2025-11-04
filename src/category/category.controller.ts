@@ -68,4 +68,10 @@ export class CategoryController {
   async enabledDisabled(@Param('id') id: string, @Body() enabledDisabled: EnabledDisabled) {
     return await this.categoryService.enabledDisabled(+id, enabledDisabled);
   }
+
+  @Public()
+  @Get('findLastCategoriesWithProducts')
+  async findLastCategoriesWithProducts() {
+    return await this.categoryService.findLastCategoriesWithProducts();
+  }
 }

@@ -3,3 +3,8 @@ export enum PageSizeEnum {
     TEN = 10,
     FIFTEEN = 15,
 }
+export enum ColumnSortEnum {
+  PRECIO = 'precio',
+  NOMBRE = 'nombre',
+  PORCENTAJE_DESCUENTO = 'porcentaje_descuento'
+}

@@ -27,7 +27,7 @@ export class EntryController {
     return await this.entryService.create(createEntryDto);
   }
 
-  @Get('findByAdmin')
+  @Post('findByAdmin')
   async findByAdmin(@Body() findByAdmin: FindByAdminDto) {
     return await this.entryService.findByAdmin(findByAdmin);
   }

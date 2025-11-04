@@ -12,13 +12,17 @@ import cloudinary from 'src/cloudinary';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
 import { UpdateCategoryDto } from './dto/MyUpdateCategory.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
+import { ProductService } from 'src/product/product.service';
+import { instanceToPlain } from 'class-transformer';
+import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) { }
+    private productService: ProductService,
+  ) {}
 
   async findAll() {
     return await this.categoryRepository.find({
@@ -57,7 +61,7 @@ export class CategoryService {
               {
                 folder: 'category',
                 resource_type: 'image',
-                format: 'webp'
+                format: 'webp',
               },
               (error, uploadResult) => {
                 if (error) {
@@ -139,7 +143,7 @@ export class CategoryService {
                   overwrite: true,
                   invalidate: true,
                   resource_type: 'image',
-                  format: 'webp'
+                  format: 'webp',
                 },
                 (error, uploadResult) => {
                   if (error) {
@@ -155,12 +159,10 @@ export class CategoryService {
         category.secure_url = uploadResult.secure_url;
       }
       await this.categoryRepository.save(category);
-
     } catch (e) {
       throw new ConflictException('No se pudo actualizar la categoría.');
     }
     return [`This action updates a #${id} category`];
-
   }
 
   async enabledDisabled(id: number, enabledDisabled: EnabledDisabled) {
@@ -170,5 +172,52 @@ export class CategoryService {
     category.habilitado = enabledDisabled.enabled;
     await this.categoryRepository.save(category);
     return [`This action enables or disables a #${id} category`];
+  }
+
+  async findLastCategoriesWithProducts() {
+    const categorias = await this.categoryRepository
+      .createQueryBuilder('categoria')
+      .orderBy('categoria.id', 'DESC')
+      .take(6)
+      .getMany();
+
+    const resultados:Category[] = [];
+
+    for (const categoria of categorias) {
+      const query = this.productService.getBaseSelectQueryBuilder();
+
+      const entidades = await query
+        .clone()
+        .where('producto.id_categoria = :idCat', { idCat: categoria.id })
+        .andWhere('producto.habilitado = true')
+        .orderBy('producto.id', 'DESC')
+        .take(10)
+        .getMany();
+
+      const rawStocks = await query
+        .clone()
+        .select('producto.id', 'id')
+        .addSelect(
+          'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+          'stock',
+        )
+        .where('producto.id_categoria = :idCat', { idCat: categoria.id })
+        .andWhere('producto.habilitado = true')
+        .orderBy('producto.id', 'DESC')
+        .take(10)
+        .getRawMany();
+
+      for (const entitie of entidades) {
+        const raw = rawStocks.find((r) => r.id === entitie.id);
+        entitie.stock = raw ? +raw.stock : 0;
+      }
+
+      resultados.push({
+        ...categoria,
+        productos: entidades.map((e) => instanceToPlain(e) as Product),
+      });
+    }
+
+    return resultados;
   }
 }

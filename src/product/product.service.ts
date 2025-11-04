@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,7 +9,14 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Between, Brackets, ILike, Not, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  Between,
+  Brackets,
+  ILike,
+  Not,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { BrandService } from 'src/brand/brand.service';
 import { CategoryService } from 'src/category/category.service';
 import { UpdateProductDto } from './dto/MyUpdateProduct';
@@ -17,6 +26,7 @@ import { RawProduct } from 'src/interfaces';
 import { UpdateDiscount } from './dto/updateDiscount.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
 import { FindByAdminForEntryDto } from './dto/findByAdminForEntry.dto';
+import { FindCatalogDto } from './dto/findCatalog.dto';
 
 @Injectable()
 export class ProductService {
@@ -24,8 +34,9 @@ export class ProductService {
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     private brandService: BrandService,
+    @Inject(forwardRef(() => CategoryService))
     private categoryService: CategoryService,
-  ) { }
+  ) {}
 
   getBaseSelectQueryBuilder(): SelectQueryBuilder<Product> {
     return this.productRepository
@@ -78,13 +89,13 @@ export class ProductService {
       }),
       ...(id_brand && { marca: { id: id_brand } }),
       ...(id_category && { categoria: { id: id_category } }),
-
     };
     return await this.productRepository.findAndCount({
       where: where,
       take: pageSize,
       skip: (page - 1) * pageSize,
       order: { id: 'DESC' },
+      relations: ['imagenes'],
     });
   }
 
@@ -267,10 +278,9 @@ export class ProductService {
     description ? (product.descripcion = description.trim()) : undefined;
     product.peso_kg = weight_kg;
     product.precio = price;
-    discount ? (product.porcentaje_descuento = discount) : undefined
+    discount ? (product.porcentaje_descuento = discount) : undefined;
     product.categoria = category;
     product.marca = brand;
-
 
     await this.productRepository.save(product);
 
@@ -284,10 +294,71 @@ export class ProductService {
     return [`This action enables or disables a #${id} product`];
   }
 
-  async updateDiscount(id: number, updateDiscount: UpdateDiscount) {
-    const product = await this.productRepository.findOneByOrFail({ id });
-    product.porcentaje_descuento = updateDiscount.discount;
-    await this.productRepository.save(product);
-    return `This action updates discount a #${id} product`;
+  async catalog(type: string, findCatalogDto: FindCatalogDto) {
+    const {
+      page,
+      pageSize,
+      searchByBrandOrCategoryOrName = undefined,
+      minValue,
+      maxValue,
+      columnSort = undefined,
+      valueSort = undefined,
+    } = findCatalogDto;
+
+    const query = this.getBaseSelectQueryBuilder();
+
+    if (type === 'marcas' && searchByBrandOrCategoryOrName) {
+      query.andWhere('marca.nombre = :name_brand', {
+        name_brand: searchByBrandOrCategoryOrName?.trim().toUpperCase(),
+      });
+    }
+
+    if (type === 'categorias' && searchByBrandOrCategoryOrName) {
+      query.andWhere('categoria.nombre = :name_category', {
+        name_category: searchByBrandOrCategoryOrName?.trim().toUpperCase(),
+      });
+    }
+
+    if (type === 'busqueda' && searchByBrandOrCategoryOrName) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('CAST(producto.codigo AS TEXT) ILIKE :search').orWhere(
+            'producto.nombre ILIKE :search',
+          );
+        }),
+        { search: `%${searchByBrandOrCategoryOrName.trim()}%` },
+      );
+    }
+
+    query.andWhere('producto.precio BETWEEN :minValue AND :maxValue', {
+      minValue,
+      maxValue,
+    });
+
+    if (columnSort && valueSort) {
+      query.orderBy(`producto.${columnSort}`, valueSort === 1 ? 'ASC' : 'DESC');
+    } else {
+      query.orderBy('producto.id', 'DESC'); 
+    }
+
+    query.skip((page - 1) * pageSize).take(pageSize);
+
+    const [entities, count] = await query.clone().getManyAndCount();
+
+    const raw = await query
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      )
+      .getRawMany();
+
+    entities.forEach((e) => {
+      e.stock = +raw.find((r) => r.id === e.id).stock;
+    });
+
+    console.log(entities, count);
+
+    return [instanceToPlain(entities), count];
   }
 }

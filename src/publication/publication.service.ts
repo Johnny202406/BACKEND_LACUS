@@ -20,7 +20,7 @@ export class PublicationService {
   ) {}
 
   async findAll() {
-    return await this.publicationRepository.findAndCount({
+    return await this.publicationRepository.find({
       order: { id: 'DESC' },
     });
   }

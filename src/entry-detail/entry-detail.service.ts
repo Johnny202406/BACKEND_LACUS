@@ -13,13 +13,17 @@ export class EntryDetailService {
     private entryDetailRepository: Repository<EntryDetail>,
   ) {}
 
-  async findByEntry(findByEntryDetailDto: FindByEntryDetailDto) {
-    const { entryId, page, pageSize } = findByEntryDetailDto;
+  async findByEntry(
+    entryId: number,
+    findByEntryDetailDto: FindByEntryDetailDto,
+  ) {
+    const { page, pageSize } = findByEntryDetailDto;
     return await this.entryDetailRepository.findAndCount({
       where: { entrada: { id: entryId } },
       take: pageSize,
       skip: (page - 1) * pageSize,
       order: { id: 'DESC' },
+      relations:['producto']
     });
   }
 }

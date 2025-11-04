@@ -12,10 +12,6 @@ import { PageSizeEnum } from 'src/Enums';
 
 export class FindByEntryDetailDto {
 
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty()
-  entryId: number;
   
   @IsInt()
   @IsPositive()

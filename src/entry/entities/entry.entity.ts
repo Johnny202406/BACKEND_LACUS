@@ -12,6 +12,9 @@ export class Entry {
   @Column({ type: 'time', nullable: false })
   hora: Date;
 
+  @Column({ type: 'int', nullable: true, default: 0 })
+  total: number;
+
   @Column({ type: 'bool', default: true })
   habilitado: boolean;
 

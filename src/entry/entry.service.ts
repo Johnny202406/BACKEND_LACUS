@@ -32,19 +32,24 @@ export class EntryService {
       const operations = data.map((detail) => {
         const entryDetail = manager.create(EntryDetail, {
           entrada: entry,
-          product_id: detail.product_id,
-          amount: detail.amount,
+          producto: { id: detail.product_id },
+          cantidad: detail.amount,
         });
         return manager.save(entryDetail);
       });
 
-      await Promise.all(operations);
+      const entryDetails = await Promise.all(operations);
+
+      const total = entryDetails.reduce((acc, entryDetail) => {
+        return acc + (entryDetail.cantidad ?? 0);
+      }, 0);
+
+      await manager.update(Entry, entry.id, { total });
       return entry;
     });
 
-    return `This action adds a new entry #${result.id} and details`;
+    return [`This action adds a new entry #${result.id} and details`];
   }
-
 
   async findByAdmin(findByAdminDto: FindByAdminDto) {
     const {
@@ -74,31 +79,36 @@ export class EntryService {
     });
   }
 
-
   async disabled(id: number) {
     const entry = await this.entryRepository.findOneOrFail({
       where: { id },
-      relations: ['entry_details', 'entry_details.producto'],
+      relations: ['detalles', 'detalles.producto'],
     });
 
     const productsIds = entry.detalles.map((detail) => detail.producto.id);
 
     const result = await this.productService.findOnlyStock(productsIds);
 
+    const errores: string[] = [];
+
     result.forEach((rawProduct) => {
       const detalle = entry.detalles.find(
         (detalle) => detalle.producto.id === rawProduct.id,
       );
       if (detalle && Math.sign(rawProduct.stock - detalle.cantidad) === -1) {
-        throw new BadRequestException(
-          `No hay suficiente stock del producto #${detalle.producto.nombre} para deshabilitar la entrada `,
+        errores.push(
+          `No hay suficiente stock del producto #${detalle.producto.nombre}`,
         );
       }
     });
 
+    if (errores.length > 0) {
+      throw new BadRequestException(errores.join(', '));
+    }
+
     entry.habilitado = false;
     await this.entryRepository.save(entry);
 
-    return `This action disables a #${id} entry`;
+    return [`This action disables a #${id} entry`];
   }
 }

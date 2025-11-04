@@ -23,8 +23,8 @@ import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
 export class EntryDetailController {
   constructor(private readonly entryDetailService: EntryDetailService) {}
 
-  @Get('findbyEntry')
-  async findByEntry(@Query() findByEntryDetailDto: FindByEntryDetailDto) {
-    return await this.entryDetailService.findByEntry(findByEntryDetailDto);
+  @Post('findbyEntry/:entryId')
+  async findByEntry(@Param('entryId') entryId: number,@Body() findByEntryDetailDto: FindByEntryDetailDto) {
+    return await this.entryDetailService.findByEntry(+entryId,findByEntryDetailDto);
   }
 }

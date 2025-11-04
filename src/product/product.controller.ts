@@ -18,6 +18,7 @@ import { EnabledDisabled } from './dto/enabledDisabled.dto';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
 import { FindByAdminForEntryDto } from './dto/findByAdminForEntry.dto';
+import { FindCatalogDto } from './dto/findCatalog.dto';
 
 @Roles(Role.ADMIN)
 @UseGuards(AuthGuard, IsAdminGuard)
@@ -62,11 +63,9 @@ export class ProductController {
   }
 
   // este ya no
-  @Patch('updateDiscount/:id')
-  async updateDiscount(
-    @Param('id') id: string,
-    @Body() updateDiscount: UpdateDiscount,
-  ) {
-    return await this.productService.updateDiscount(+id, updateDiscount);
+  @Public()
+  @Post('catalog/:type')
+  async catalog(@Param('type') type: string, @Body() findCatalogDto: FindCatalogDto) {
+    return await this.productService.catalog(type,findCatalogDto);
   }
 }

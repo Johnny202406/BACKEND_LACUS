@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
@@ -25,8 +26,10 @@ export class FindByAdminDto {
 
   @IsDate()
   @IsOptional()
+  @Type(() => Date)
   startDate: Date;
 
+  @Type(() => Date)
   @IsDate()
   @IsOptional()
   endDate: Date;
