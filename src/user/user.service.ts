@@ -1,28 +1,43 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { ILike, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenPayload } from 'google-auth-library';
 import { UpdateUserMyDto } from './dto/update-user-my.dto';
 import { EnabledDisabled } from './dto/enabledDisabled.dto';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
+import { Cart } from 'src/cart/entities/cart.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private dataSource: DataSource,
   ) {}
 
   async create(tokenPayload: TokenPayload): Promise<User> {
-    const user: User = this.userRepository.create({
-      sub: tokenPayload.sub,
-      nombre: tokenPayload.given_name?.toUpperCase(),
-      apellido: tokenPayload.family_name?.toUpperCase(),
-      correo: tokenPayload.email?.toLowerCase(),
+    const result = await this.dataSource.transaction(async (manager) => {
+      const user: User = manager.create(User, {
+        sub: tokenPayload.sub,
+        nombre: tokenPayload.given_name?.toUpperCase(),
+        apellido: tokenPayload.family_name?.toUpperCase(),
+        correo: tokenPayload.email?.toLowerCase(),
+        tipo_usuario: { id: 2 },
+      });
+
+      const savedUser = await manager.save(User, user);
+
+      const cart: Cart = manager.create(Cart, {
+        usuario: savedUser,
+        updated_at: new Date(),
+      });
+
+      await manager.save(Cart, cart);
+      return savedUser;
     });
 
-    return await this.userRepository.save(user);
+    return result;
   }
 
   async findOneById(id: number): Promise<User | null> {

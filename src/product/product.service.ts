@@ -156,6 +156,43 @@ export class ProductService {
     });
     return raws as RawProduct[];
   }
+  async findWithStockByIds(ids: number[]) {
+    if (ids.length === 0) return [];
+
+    const query = this.getBaseSelectQueryBuilder();
+    query.where('producto.id IN (:...ids)', { ids });
+    query.orderBy('producto.id', 'DESC');
+    const entities = await query.clone().getMany();
+
+    const raw = await query
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      )
+      .getRawMany();
+
+    entities.forEach((e) => {
+      e.stock = +raw.find((r) => r.id === e.id).stock;
+    });
+
+    return instanceToPlain(entities);
+  }
+  async findOneOnlyStock(id: number): Promise<RawProduct | null> {
+    const query = this.getBaseSelectQueryBuilder();
+    query
+      .where('producto.id =:id', { id })
+      .andWhere('producto.habilitado = true')
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      );
+    const raw = await query.getRawOne();
+    if (!raw) return null;
+    raw.stock = +raw.stock;
+    return raw as RawProduct;
+  }
 
   async findOneById(id: number) {
     return await this.productRepository.findOneBy({
@@ -238,8 +275,6 @@ export class ProductService {
       e.stock = +raw.find((r) => r.id === e.id).stock;
     });
 
-    console.log(entities, count);
-
     return [instanceToPlain(entities), count];
   }
 
@@ -306,6 +341,7 @@ export class ProductService {
     } = findCatalogDto;
 
     const query = this.getBaseSelectQueryBuilder();
+    query.andWhere('producto.habilitado = true');
 
     if (type === 'marcas' && searchByBrandOrCategoryOrName) {
       query.andWhere('marca.nombre = :name_brand', {
@@ -338,7 +374,7 @@ export class ProductService {
     if (columnSort && valueSort) {
       query.orderBy(`producto.${columnSort}`, valueSort === 1 ? 'ASC' : 'DESC');
     } else {
-      query.orderBy('producto.id', 'DESC'); 
+      query.orderBy('producto.id', 'DESC');
     }
 
     query.skip((page - 1) * pageSize).take(pageSize);
@@ -356,8 +392,6 @@ export class ProductService {
     entities.forEach((e) => {
       e.stock = +raw.find((r) => r.id === e.id).stock;
     });
-
-    console.log(entities, count);
 
     return [instanceToPlain(entities), count];
   }
