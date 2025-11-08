@@ -35,8 +35,8 @@ export class CreateProductDto {
   discount: number;
 
   @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false })
-  @IsNotEmpty()
-  @IsPositive()
+  @IsOptional()
+  @Min(0)
   weight_kg: number;
 
   @IsInt()
