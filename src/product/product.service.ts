@@ -332,7 +332,7 @@ export class ProductService {
 
     product.nombre = name.trim().toUpperCase();
     description ? (product.descripcion = description.trim()) : undefined;
-    product.peso_kg = weight_kg;
+     weight_kg ? (product.peso_kg = weight_kg) : undefined;
     product.precio = price;
     discount ? (product.porcentaje_descuento = discount) : undefined;
     product.categoria = category;

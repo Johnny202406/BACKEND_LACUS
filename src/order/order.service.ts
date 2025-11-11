@@ -34,6 +34,9 @@ import axios from 'axios';
 import { Cart } from 'src/cart/entities/cart.entity';
 import pdf from 'html-pdf';
 import { Readable } from 'stream';
+import { OrderStatus } from 'src/order-status/entities/order-status.entity';
+import { DeliveryType } from 'src/delivery-type/entities/delivery-type.entity';
+import { InvoiceType } from 'src/invoice-type/entities/invoice-type.entity';
 @Injectable()
 export class OrderService {
   constructor(
@@ -313,21 +316,26 @@ export class OrderService {
       endDate,
       orderStatus,
       deliveryType,
-      paymentMethod,
     } = findAllByAdminDto;
 
+ 
     // unir datos y seleccionarlos
     // La diferencia entre LEFT JOINy INNER JOINes que INNER JOINno se devolverá un usuario si no tiene fotos. LEFT JOINSe devolverá el usuario incluso si no tiene fotos. Para obtener más información sobre los diferentes tipos de unión, consulte la documentación de SQL .
     const query = this.orderRepository
       .createQueryBuilder('order')
-      .leftJoinAndSelect(User, 'user', 'user.id = order.id_usuario')
+    .leftJoinAndSelect('order.usuario', 'user')
+    .leftJoinAndSelect('order.estado_pedido', 'estado_pedido')
+    .leftJoinAndSelect('order.tipo_entrega', 'tipo_entrega')
+    .leftJoinAndSelect('order.comprobante', 'comprobante')
+    .leftJoinAndSelect('comprobante.tipo_comprobante', 'tipo_comprobante')
+    .leftJoinAndSelect('order.detalles', 'detalles')
       .take(pageSize)
       .skip((page - 1) * pageSize)
       .orderBy('order.id', 'DESC');
 
     if (searchByCodeOrEmail) {
       query.andWhere(
-        '(order.codigo ILIKE :search OR user.correo ILIKE :search)',
+        '(CAST(producto.codigo AS TEXT) ILIKE :search OR user.correo ILIKE :search)',
         { search: `%${searchByCodeOrEmail.trim()}%` },
       );
     }
@@ -338,25 +346,20 @@ export class OrderService {
         endDate,
       });
     } else if (startDate) {
-      query.andWhere('order.fecha >= :startDate', { startDate });
+      query.andWhere('order.fecha = :startDate', { startDate });
     } else if (endDate) {
-      query.andWhere('order.fecha <= :endDate', { endDate });
+      query.andWhere('order.fecha = :endDate', { endDate });
     }
 
     if (orderStatus) {
-      query.andWhere('order.id_estado_pedido = :orderStatus', { orderStatus });
+      query.andWhere('estado_pedido.id = :orderStatus', { orderStatus });
     }
 
     if (deliveryType) {
-      query.andWhere('order.id_tipo_entrega = :deliveryType', { deliveryType });
+      query.andWhere('tipo_entrega.id = :deliveryType', { deliveryType });
     }
 
-    if (paymentMethod) {
-      query.andWhere('order.id_metodo_pago = :paymentMethod', {
-        paymentMethod,
-      });
-    }
-    return await query.printSql().getManyAndCount();
+    return await query.getManyAndCount();
   }
 
   findOne(id: number) {
@@ -385,7 +388,7 @@ export class OrderService {
       });
     });
 
-    return `This action updates a ${result.affected} orders`;
+    return [`This action updates a ${result.affected} orders`];
   }
 
   remove(id: number) {

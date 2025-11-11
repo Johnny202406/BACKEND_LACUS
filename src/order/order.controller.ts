@@ -25,6 +25,7 @@ import { PedidoDTO } from './dto/create-order.dto copy';
 import type { Response } from 'express';
 import { join } from 'path';
 import * as fs from 'fs';
+import { UpdateOrderStatusDto } from './dto/updateOrderStatus.dto';
 
 @Controller('order')
 @UseGuards(AuthGuard)
@@ -72,12 +73,21 @@ async downloadPDF(@Param('id') id: string, @Res() res: Response) {
   }
   @Roles(Role.ADMIN)
   @UseGuards(IsAdminGuard)
-  @Get('findByAdmin')
+  @Post('findByAdmin')
   async findByAdmin(
-    @Query() findByAdminDto: FindByAdminDto,
+    @Body() findByAdminDto: FindByAdminDto,
   ): Promise<[Order[], number]> {
     return await this.orderService.findByAdmin(findByAdminDto);
   }
+
+
+
+  @Patch('updateStatus')
+  async updateStatus(@Body() updateOrderStatusDto: UpdateOrderStatusDto) {
+    return await this.orderService.updateStatus(updateOrderStatusDto);
+  }
+
+
 
   @Get(':id')
   findOne(@Param('id') id: string) {
