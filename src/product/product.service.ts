@@ -130,7 +130,7 @@ export class ProductService {
       codigo: uuidv4(),
       nombre: name.trim().toUpperCase(),
       descripcion: description ? description.trim() : undefined,
-      peso_kg: weight_kg,
+      peso_kg: weight_kg||0,
       precio: price,
       porcentaje_descuento: discount ? discount : undefined,
       categoria: category,

@@ -13,7 +13,7 @@ export const MyParseFilePipeBuilder = new ParseFilePipeBuilder()
     fileType: /^image\//,
   })
   .addMaxSizeValidator({
-    maxSize: 1024 * 1024 * 0.2,
+    maxSize: 1024 * 1024 * 5,
   })
   .build({
     errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -23,7 +23,7 @@ export const MyParseFilePipeBuilderOptional = new ParseFilePipeBuilder()
     fileType: /^image\//,
   })
   .addMaxSizeValidator({
-    maxSize: 1024 * 1024 * 0.2,
+    maxSize: 1024 * 1024 * 5,
   })
   .build({
     errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
