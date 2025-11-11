@@ -28,6 +28,7 @@ export class CartService {
       .leftJoinAndSelect('cart.usuario', 'usuario')
       .leftJoinAndSelect('detalle.producto', 'producto')
       .where('usuario.id = :id', { id })
+      .orderBy('detalle.id', 'DESC')
       .getOneOrFail();
     cart.detalles = cart.detalles.filter(
       (detalle) => detalle.producto?.habilitado === true,

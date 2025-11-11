@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
@@ -28,10 +29,12 @@ export class FindByClientDto {
   @MaxLength(36)
   searchByCode: string;
 
+  @Type(() => Date)
   @IsDate()
   @IsOptional()
   startDate: Date;
 
+  @Type(() => Date)
   @IsDate()
   @IsOptional()
   endDate: Date;
@@ -43,8 +46,4 @@ export class FindByClientDto {
   @IsInt()
   @IsOptional()
   deliveryType: number;
-
-  @IsInt()
-  @IsOptional()
-  paymentMethod: number;
 }

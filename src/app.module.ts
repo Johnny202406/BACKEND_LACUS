@@ -63,6 +63,6 @@ import { CoverageRateModule } from './coverage-rate/coverage-rate.module';
     CoverageRateModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,],
 })
 export class AppModule {}

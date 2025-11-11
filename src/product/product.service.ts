@@ -156,6 +156,27 @@ export class ProductService {
     });
     return raws as RawProduct[];
   }
+  async findOnlyStockWithIdsForOrder(ids: number[]): Promise<RawProduct[]> {
+    if (ids.length === 0) return [];
+
+    const query = this.getBaseSelectQueryBuilder();
+    query
+      .where('producto.id IN (:...ids)', { ids })
+      .andWhere('producto.habilitado = true')
+      .orderBy('producto.id', 'DESC')
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      );
+
+    const raws = await query.getRawMany();
+    raws.forEach((raw) => {
+      raw.stock = +raw.stock;
+    });
+    return raws as RawProduct[];
+  }
+
   async findWithStockByIds(ids: number[]) {
     if (ids.length === 0) return [];
 
@@ -248,7 +269,7 @@ export class ProductService {
     if (searchByCodeOrName) {
       query.andWhere(
         new Brackets((qb) => {
-          qb.where('producto.codigo ILIKE :search').orWhere(
+          qb.where('CAST(producto.codigo AS TEXT) ILIKE :search').orWhere(
             'producto.nombre ILIKE :search',
           );
         }),

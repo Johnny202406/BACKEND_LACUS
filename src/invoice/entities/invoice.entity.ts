@@ -14,14 +14,17 @@ export class Invoice {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  comprobante: string;
+  @Column({ type: 'varchar', length: 11, nullable: true })
+  ruc: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  xml: string;
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  razon_social: string;
 
-  @Column({ type: 'varchar', length: 500, nullable: true })
-  cdr: string;
+  @Column({ type: 'varchar', length: 8, nullable: true })
+  dni: string;
+
+  @Column({ type: 'varchar', length: 510, nullable: true })
+  nombres: string;
 
   @ManyToOne(() => InvoiceType, (invoiceType) => invoiceType.comprobantes, {
     nullable: false,

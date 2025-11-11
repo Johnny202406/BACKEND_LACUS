@@ -26,4 +26,5 @@ export class CartDetail {
   })
   @JoinColumn({ name: 'id_carrito' })
   carrito: Cart;
+
 }

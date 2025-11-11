@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  StreamableFile,
+  Res,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -19,28 +21,52 @@ import { Role, Roles } from 'src/auth/guards/roles.decorator';
 import { IsClientGuard } from 'src/auth/guards/is-client.guard';
 import { IsAdminGuard } from 'src/auth/guards/is-admin.guard';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
+import { PedidoDTO } from './dto/create-order.dto copy';
+import type { Response } from 'express';
+import { join } from 'path';
+import * as fs from 'fs';
 
 @Controller('order')
 @UseGuards(AuthGuard)
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  @Post('create')
+  async create(@Body() pedidoDTO: PedidoDTO) {
+    return await this.orderService.create(pedidoDTO);
   }
 
   @Get()
   findAll() {
     return this.orderService.findAll();
   }
+  
+
+
+ @Get('download/pdf/:id')
+async downloadPDF(@Param('id') id: string, @Res() res: Response) {
+  const { codigo, pdf } = await this.orderService.generatePDF(+id); // pdf = Buffer
+
+  res.set({
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `attachment; filename="${codigo}.pdf"`,
+    'Content-Length': pdf.length,
+  });
+
+  res.end(pdf); // Esto fuerza la descarga
+}
+
+
+
+
+
 
   @Roles(Role.CLIENT)
   @UseGuards(IsClientGuard)
-  @Get('findByClient/:id')
+  @Post('findByClient/:id')
   async findByClient(
-    @Param() id: string,
-    @Query() findByClientDto: FindByClientDto,
+    @Param('id') id: string,
+    @Body() findByClientDto: FindByClientDto,
   ): Promise<[Order[], number]> {
     return await this.orderService.findByClient(+id, findByClientDto);
   }

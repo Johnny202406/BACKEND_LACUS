@@ -19,14 +19,14 @@ export class Cart {
 
   @OneToOne(() => User, (user) => user.carrito, {
     nullable: false,
-    eager: true,
+    eager: false,
   })
   @JoinColumn({ name: 'id_usuario' })
   usuario: User;
 
   @OneToMany(() => CartDetail, (cartDetail) => cartDetail.carrito, {
     nullable: false,
-    eager: true,
+    eager: false,
   })
   detalles: CartDetail[];
 }

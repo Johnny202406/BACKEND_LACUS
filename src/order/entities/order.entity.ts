@@ -29,13 +29,19 @@ export class Order {
   hora: Date;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  subtotal: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  delivery_costo: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   total: number;
 
-  @Column({ type: 'point', nullable: false })
-  direccion: { x: number; y: number };
+  @Column({ type: 'point', nullable: true })
+  direccion: string;
 
   @Column({ type: 'date', nullable: true })
-  ultima_fecha: string;
+  ultima_fecha: Date;
 
   @ManyToOne(() => OrderStatus, (orderStatus) => orderStatus.id, {
     nullable: false,

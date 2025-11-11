@@ -18,21 +18,26 @@ export class CartDetailService {
   ) {}
   async create(createCartDetailDto: CreateCartDetailDto) {
     const { id_carrito, id_producto } = createCartDetailDto;
-    await this.dataSource.manager.findOneByOrFail(Cart, { id: id_carrito });
-    
+    const cart = await this.dataSource.manager.findOneByOrFail(Cart, {
+      id: id_carrito,
+    });
+
     const hasStock = await this.productService.findOneOnlyStock(id_producto);
 
     if (!hasStock) throw new Error('Producto no disponible!');
 
     if (hasStock.stock <= 0) throw new Error('Producto sin stock!');
 
-    const cartDetail = this.cartDetailRepository.create({
-      cantidad: 1,
-      carrito: { id: id_carrito },
-      producto: { id: id_producto },
-    });
+    await this.dataSource
+      .createQueryBuilder()
+      .insert()
+      .into(CartDetail)
+      .values({ cantidad: 1,carrito:{id:id_carrito}, producto:{id:id_producto} })
+      .printSql()
+      .execute();
 
-    await this.cartDetailRepository.save(cartDetail);
+    cart.updated_at = new Date();
+    await this.dataSource.manager.save(Cart, cart);
     return ['This action adds a new cartDetail'];
   }
 
@@ -45,27 +50,39 @@ export class CartDetailService {
   }
 
   async update(updateCartDetailDto: UpdateCartDetailDto) {
-    const {id,quantity}= updateCartDetailDto
+    const { id, quantity } = updateCartDetailDto;
     const cartDetail = await this.cartDetailRepository.findOneOrFail({
-      where: { id: id, producto: { habilitado: true } },relations: ['producto'],
+      where: { id: id, producto: { habilitado: true } },
+      relations: ['producto', 'carrito'],
     });
-      const hasStock = await this.productService.findOneOnlyStock(cartDetail.producto.id);
+    const hasStock = await this.productService.findOneOnlyStock(
+      cartDetail.producto.id,
+    );
 
     if (!hasStock) throw new Error('Producto no disponible!');
 
     if (hasStock.stock <= 0) throw new Error('Producto sin stock!');
 
-    if (quantity>hasStock.stock) throw new Error('Sin stock suficiente!');
+    if (quantity > hasStock.stock) throw new Error('Sin stock suficiente!');
 
     cartDetail.cantidad = updateCartDetailDto.quantity;
 
     await this.cartDetailRepository.save(cartDetail);
 
+    cartDetail.carrito.updated_at = new Date();
+    await this.dataSource.manager.save(Cart, cartDetail.carrito);
+
     return [`This action updates a #${updateCartDetailDto.id} cartDetail`];
   }
 
   async remove(id: number) {
+    const cartDetail = await this.cartDetailRepository.findOneOrFail({
+      where: { id },
+      relations: ['carrito'],
+    });
     await this.cartDetailRepository.delete({ id });
+    cartDetail.carrito.updated_at = new Date();
+    await this.dataSource.manager.save(Cart, cartDetail.carrito);
     return [`This action removes a #${id} cartDetail`];
   }
 }

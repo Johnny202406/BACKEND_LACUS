@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,6 +23,7 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @Inject(forwardRef(() => ProductService))
     private productService: ProductService,
   ) {}
 
@@ -181,7 +184,7 @@ export class CategoryService {
       .take(6)
       .getMany();
 
-    const resultados:Category[] = [];
+    const resultados: Category[] = [];
 
     for (const categoria of categorias) {
       const query = this.productService.getBaseSelectQueryBuilder();
