@@ -57,9 +57,9 @@ export class AuthService {
       httpOnly: true,
       maxAge: minutes * 60 * 1000,
       signed: true,
-      secure: false, // en producción cambiar a true
+      secure: this.configService.get<boolean>('COOKIE_SECURE'), // en producción cambiar a true
       priority: 'high',
-      sameSite: 'lax',
+      sameSite: this.configService.get<'lax' | 'strict' | 'none'>('COOKIE_SAMESITE'),
       // partitioned: true,
     });
     return;
