@@ -62,7 +62,7 @@ export class UserService {
       enabled = undefined,
     } = findByAdminDto;
     const where: any = {
-      ...(searchByEmail && { correo: ILike(`%${searchByEmail}%`) }),
+      ...(searchByEmail && { correo: ILike(`%${searchByEmail.trim()}%`) }),
       ...(enabled !== undefined && { habilitado: enabled }),
     };
     // El operador cortocircuito (&&) devuelve el primer operando falso,

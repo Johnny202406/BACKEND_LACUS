@@ -15,6 +15,7 @@ import {
   Repository,
   DataSource,
   Equal,
+  Raw,
 } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { FindByAdminDto } from './dto/findByAdmin.dto';
@@ -62,15 +63,54 @@ export class OrderService {
             th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
             th { background-color: #f2f2f2; }
             tfoot td { font-weight: bold; }
+          
+     
+      .order-info {
+        display: table;
+        margin: 20px auto;
+        width: auto;
+      }
+
+      .order-row {
+        display: table-row;
+      }
+
+      .order-cell {
+        display: table-cell;
+        padding: 4px 12px;
+        vertical-align: middle;
+      }
+
+      .label {
+        font-weight: bold;
+        text-align: right;
+      }
+
           </style>
         </head>
         <body>
           <h1>LACUS PERU S.A.C </h1>  
           <h2>RUC: 20608508202 </h1>  
           <h2>Ticket: ${order.codigo}</h1>  
-          <p><strong>Fecha:</strong> ${order.fecha}</p>
-          <p><strong>Hora:</strong> ${order.hora}</p>
-          <p><strong>Total:</strong> ${order.total}</p>
+     <div class="order-info">
+      <div class="order-row">
+        <div class="order-cell label">Fecha:</div>
+        <div class="order-cell">${order.fecha}</div>
+        <div class="order-cell label">Hora:</div>
+        <div class="order-cell">${order.hora}</div>
+      </div>
+      <div class="order-row">
+        <div class="order-cell label">Subtotal:</div>
+        <div class="order-cell">${order.subtotal}</div>
+        <div class="order-cell label">Delivery Costo:</div>
+        <div class="order-cell">${order.delivery_costo}</div>
+      </div>
+      <div class="order-row">
+        <div class="order-cell label">Total:</div>
+        <div class="order-cell">${order.total}</div>
+      </div>
+    </div>
+    </div>
 
           <table>
             <thead>
@@ -99,7 +139,7 @@ export class OrderService {
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="4">Total</td>
+              <td colspan="4"></td>
               <td>${Number(order.total).toFixed(2)}</td>
             </tr>
           </tfoot>
@@ -108,7 +148,7 @@ export class OrderService {
         </body>
       </html>
     `;
-    const stream :Buffer= await new Promise((resolve, reject) => {
+    const stream: Buffer = await new Promise((resolve, reject) => {
       pdf.create(html).toBuffer(function (err, stream) {
         if (err) return reject(err);
         resolve(stream);
@@ -128,10 +168,17 @@ export class OrderService {
       comprobante,
     } = pedidoDTO;
 
+    if (carrito.detalles.length <= 0) {
+      throw new Error('No hay productos en su carrito de compras');
+    }
+
     const idsProductos = carrito.detalles.map((detail) => detail.producto.id);
     const stockProductos =
       await this.productService.findOnlyStockWithIdsForOrder(idsProductos);
 
+    if (stockProductos.length <= 0) {
+      throw new Error('No hay productos habilitados en su carrito de compras');
+    }
     if (stockProductos.length < carrito.detalles.length) {
       throw new NotFoundException(
         'Algunos de los productos durante el proceso, no estan habilitados revise de nuevo su carrito de compras ',
@@ -154,46 +201,49 @@ export class OrderService {
       throw new BadRequestException(errores.join(', '));
     }
 
-    const { data } = await axios.post(
-      'https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=TEST-633ec8bb-1e43-4d96-bad7-37e506d8ee08',
-      {
-        phoneNumber: metodo_pago.yape.celular.toString(), // string
-        otp: metodo_pago.yape.otp.toString().padStart(6, '0'), // string con 6 dígitos
-        requestId: 'req-' + Date.now(), // string único
-      },
-      {
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
-
-    // Step 2: Initialize the client object
-    const client = new MercadoPagoConfig({
-      accessToken:
-        'TEST-6756717975929552-110914-fb8978b6614e87f23e3a1baa5ef45720-2978123989',
-      options: { timeout: 5000 },
-    });
-
-    // payment
-    const payment = new Payment(client);
-    const { status, id } = await payment.create({
-      requestOptions: {
-        timeout: 5000,
-        idempotencyKey: 'req' + uuidv4(),
-      },
-      body: {
-        description: 'test_YAPE',
-        installments: 1,
-        payment_method_id: 'yape',
-        payer: {
-          email: carrito.usuario.correo,
+    try {
+      const { data } = await axios.post(
+        'https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=TEST-633ec8bb-1e43-4d96-bad7-37e506d8ee08',
+        {
+          phoneNumber: metodo_pago.yape.celular.toString(), // string
+          otp: metodo_pago.yape.otp.toString().padStart(6, '0'), // string con 6 dígitos
+          requestId: 'req-' + Date.now(), // string único
         },
-        token: data.id,
-        transaction_amount: Number(total.toFixed(2)),
-      },
-    });
-    console.log(id);
-    if (status !== 'approved') {
-      throw new Error('Pago con Yape no realizado');
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      // Step 2: Initialize the client object
+      const client = new MercadoPagoConfig({
+        accessToken:
+          'TEST-6756717975929552-110914-fb8978b6614e87f23e3a1baa5ef45720-2978123989',
+        options: { timeout: 5000 },
+      });
+
+      // payment
+      const payment = new Payment(client);
+      const { status, id } = await payment.create({
+        requestOptions: {
+          timeout: 5000,
+          idempotencyKey: 'req' + uuidv4(),
+        },
+        body: {
+          description: 'test_YAPE',
+          installments: 1,
+          payment_method_id: 'yape',
+          payer: {
+            email: carrito.usuario.correo,
+          },
+          token: data.id,
+          transaction_amount: Number(total.toFixed(2)),
+        },
+      });
+      // console.log(id);
+      if (status !== 'approved') {
+        throw new Error('Pago con Yape no realizado');
+      }
+    } catch (error) {
+      throw new BadRequestException('Pago con Yape no realizado');
     }
 
     const result = await this.dataSource.transaction(async (manager) => {
@@ -236,16 +286,18 @@ export class OrderService {
       if ('factura' in comprobante) {
         comprobanteEntity = manager.create(Invoice, {
           tipo_comprobante: { id: 2 },
-          ruc: String(comprobante.factura.ruc),
-          razon_social: String(comprobante.factura.razon_social),
+          ruc: String(comprobante.factura.ruc).trim().toUpperCase(),
+          razon_social: String(comprobante.factura.razon_social)
+            .trim()
+            .toUpperCase(),
           pedido: { id: order.id },
         });
         await manager.save(Invoice, comprobanteEntity);
       } else if ('boleta' in comprobante) {
         comprobanteEntity = manager.create(Invoice, {
           tipo_comprobante: { id: 1 },
-          dni: String(comprobante.boleta.dni),
-          nombres: String(comprobante.boleta.nombres),
+          dni: String(comprobante.boleta.dni).trim().toUpperCase(),
+          nombres: String(comprobante.boleta.nombres).trim().toUpperCase(),
           pedido: { id: order.id },
         });
         await manager.save(Invoice, comprobanteEntity);
@@ -280,7 +332,12 @@ export class OrderService {
     } = findByClientDto;
     const where: any = {
       usuario: { id: id },
-      ...(searchByCode && { correo: ILike(`%${searchByCode.trim()}%`) }),
+      ...(searchByCode && {
+        codigo: Raw(() => `"Order"."codigo"::text ILIKE :codigo`, {
+          codigo: `%${searchByCode.trim()}%`,
+        }),
+      }),
+
       ...(startDate && endDate
         ? { fecha: Between(startDate, endDate) }
         : startDate
@@ -318,24 +375,23 @@ export class OrderService {
       deliveryType,
     } = findAllByAdminDto;
 
- 
     // unir datos y seleccionarlos
     // La diferencia entre LEFT JOINy INNER JOINes que INNER JOINno se devolverá un usuario si no tiene fotos. LEFT JOINSe devolverá el usuario incluso si no tiene fotos. Para obtener más información sobre los diferentes tipos de unión, consulte la documentación de SQL .
     const query = this.orderRepository
       .createQueryBuilder('order')
-    .leftJoinAndSelect('order.usuario', 'user')
-    .leftJoinAndSelect('order.estado_pedido', 'estado_pedido')
-    .leftJoinAndSelect('order.tipo_entrega', 'tipo_entrega')
-    .leftJoinAndSelect('order.comprobante', 'comprobante')
-    .leftJoinAndSelect('comprobante.tipo_comprobante', 'tipo_comprobante')
-    .leftJoinAndSelect('order.detalles', 'detalles')
+      .leftJoinAndSelect('order.usuario', 'user')
+      .leftJoinAndSelect('order.estado_pedido', 'estado_pedido')
+      .leftJoinAndSelect('order.tipo_entrega', 'tipo_entrega')
+      .leftJoinAndSelect('order.comprobante', 'comprobante')
+      .leftJoinAndSelect('comprobante.tipo_comprobante', 'tipo_comprobante')
+      .leftJoinAndSelect('order.detalles', 'detalles')
       .take(pageSize)
       .skip((page - 1) * pageSize)
       .orderBy('order.id', 'DESC');
 
     if (searchByCodeOrEmail) {
       query.andWhere(
-        '(CAST(producto.codigo AS TEXT) ILIKE :search OR user.correo ILIKE :search)',
+        '(CAST(order.codigo AS TEXT) ILIKE :search OR user.correo ILIKE :search)',
         { search: `%${searchByCodeOrEmail.trim()}%` },
       );
     }

@@ -397,8 +397,7 @@ INSERT INTO "public"."migrations" ("id", "timestamp", "name") VALUES
 (7, 1762810608310, 'AutoMigration1762810608310');
 
 INSERT INTO "public"."publicacion" ("id", "titulo", "url_redireccion", "public_id", "secure_url") VALUES
-(1, 'JEFER', 'HTTPS://PHOTOS.GOOGLE.COM/U/0/?HL=ES', 'publication/uvauqiysn48yldzduabz', 'https://res.cloudinary.com/valentine1234/image/upload/v1762873020/publication/uvauqiysn48yldzduabz.webp'),
-(2, 'TIENDA', 'HTTPS://WWW.FACEBOOK.COM/LACUSPERU/?LOCALE=ES_LA', 'publication/u9gpnsmoynp3xwj2pmol', 'https://res.cloudinary.com/valentine1234/image/upload/v1762873256/publication/u9gpnsmoynp3xwj2pmol.webp');
+(1, 'TIENDA', 'HTTPS://WWW.FACEBOOK.COM/LACUSPERU/?LOCALE=ES_LA', 'publication/u9gpnsmoynp3xwj2pmol', 'https://res.cloudinary.com/valentine1234/image/upload/v1762873256/publication/u9gpnsmoynp3xwj2pmol.webp');
 INSERT INTO "public"."producto" ("id", "codigo", "nombre", "descripcion", "peso_kg", "precio", "habilitado", "porcentaje_descuento", "id_categoria", "id_marca") VALUES
 (2, 'f6e60060-2421-47f0-afc4-4933a72af178', 'REPORDUCTOR CUYES RCUY *50', 'Descripción...', 50, 102, 't', 0, 1, 2),
 (3, '37262c4d-0542-43c6-bee1-11dd70822b5a', 'REPORDUCTOR ANTI VIT', 'Descripción...', 50, 110, 't', 10, 1, 2),

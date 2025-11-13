@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   Between,
   DataSource,
+  Equal,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
@@ -64,9 +65,9 @@ export class EntryService {
       ...(startDate && endDate
         ? { fecha: Between(startDate, endDate) }
         : startDate
-          ? { fecha: MoreThanOrEqual(startDate) }
+          ? { fecha: Equal(startDate) }
           : endDate
-            ? { fecha: LessThanOrEqual(endDate) }
+            ? { fecha: Equal(endDate) }
             : undefined),
       ...(enabled && { habilitado: enabled }),
     };
