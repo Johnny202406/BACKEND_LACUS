@@ -43,6 +43,8 @@ import { CoverageRateModule } from './coverage-rate/coverage-rate.module';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: 'dev.env',
+      ignoreEnvFile: !(process.env.NODE_ENV === undefined),
     }),
     UserModule,
     OrderStatusModule,
