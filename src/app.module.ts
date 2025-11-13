@@ -30,12 +30,12 @@ import { CoverageRateModule } from './coverage-rate/coverage-rate.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<'postgres'>('TYPE'),
-        host: configService.get<string>('HOSTNAME'),
-        port: configService.get<number>('PORT'),
-        username: configService.get<string>('USERNAME'),
-        password: configService.get<string>('PASSWORD'),
-        database: configService.get<string>('DATABASE'),
+        type: 'postgres',
+        host: configService.get<string>('DB_HOSTNAME'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
         synchronize: false,
       }),

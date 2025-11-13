@@ -205,7 +205,7 @@ export class OrderService {
 
     try {
       const { data } = await axios.post(
-        `https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=${this.configService.get<string>('PUBLIC_KEY')}`,
+        `https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=${this.configService.get<string>('MERCADO_PAGO_PUBLIC_KEY')}`,
         {
           phoneNumber: metodo_pago.yape.celular.toString(), // string
           otp: metodo_pago.yape.otp.toString().padStart(6, '0'), // string con 6 dígitos
@@ -218,7 +218,7 @@ export class OrderService {
       // Step 2: Initialize the client object
       const client = new MercadoPagoConfig({
         accessToken:
-          `${this.configService.get<string>('ACCESS_TOKEN')}`,
+          `${this.configService.get<string>('MERCADO_PAGO_ACCESS_TOKEN')}`,
         options: { timeout: 5000 },
       });
 
