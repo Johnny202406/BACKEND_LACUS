@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { OrderStatusModule } from './order-status/order-status.module';
 import { DeliveryTypeModule } from './delivery-type/delivery-type.module';
 import { PaymentMethodModule } from './payment-method/payment-method.module';
@@ -27,16 +27,19 @@ import { CoverageRateModule } from './coverage-rate/coverage-rate.module';
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '',
-      database: 'lacus',
-      autoLoadEntities: true,
-      entities: [],
-      synchronize: false,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: configService.get<'postgres'>('TYPE'),
+        host: configService.get<string>('HOSTNAME'),
+        port: configService.get<number>('PORT'),
+        username: configService.get<string>('USERNAME'),
+        password: configService.get<string>('PASSWORD'),
+        database: configService.get<string>('DATABASE'),
+        autoLoadEntities: true,
+        synchronize: false,
+      }),
+      inject: [ConfigService],
     }),
     ConfigModule.forRoot({
       isGlobal: true,

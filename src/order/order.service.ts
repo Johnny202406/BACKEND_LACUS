@@ -38,6 +38,7 @@ import { Readable } from 'stream';
 import { OrderStatus } from 'src/order-status/entities/order-status.entity';
 import { DeliveryType } from 'src/delivery-type/entities/delivery-type.entity';
 import { InvoiceType } from 'src/invoice-type/entities/invoice-type.entity';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class OrderService {
   constructor(
@@ -46,6 +47,7 @@ export class OrderService {
     private orderStatusService: OrderStatusService,
     private dataSource: DataSource,
     private productService: ProductService,
+    private readonly configService: ConfigService
   ) {}
 
   async generatePDF(id: number) {
@@ -203,7 +205,7 @@ export class OrderService {
 
     try {
       const { data } = await axios.post(
-        'https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=TEST-633ec8bb-1e43-4d96-bad7-37e506d8ee08',
+        `https://api.mercadopago.com/platforms/pci/yape/v1/payment?public_key=${this.configService.get<string>('PUBLIC_KEY')}`,
         {
           phoneNumber: metodo_pago.yape.celular.toString(), // string
           otp: metodo_pago.yape.otp.toString().padStart(6, '0'), // string con 6 dígitos
@@ -216,7 +218,7 @@ export class OrderService {
       // Step 2: Initialize the client object
       const client = new MercadoPagoConfig({
         accessToken:
-          'TEST-6756717975929552-110914-fb8978b6614e87f23e3a1baa5ef45720-2978123989',
+          `${this.configService.get<string>('ACCESS_TOKEN')}`,
         options: { timeout: 5000 },
       });
 
