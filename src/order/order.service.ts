@@ -142,7 +142,7 @@ export class OrderService {
           <tfoot>
             <tr>
               <td colspan="4"></td>
-              <td>${Number(order.total).toFixed(2)}</td>
+              <td>${Number(order.subtotal).toFixed(2)}</td>
             </tr>
           </tfoot>
 
