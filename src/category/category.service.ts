@@ -180,6 +180,7 @@ export class CategoryService {
   async findLastCategoriesWithProducts() {
     const categorias = await this.categoryRepository
       .createQueryBuilder('categoria')
+      .where('categoria.habilitado=true')
       .orderBy('categoria.id', 'DESC')
       .take(6)
       .getMany();
