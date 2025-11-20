@@ -254,7 +254,7 @@ export class ProductService {
 
     const query = this.getBaseSelectQueryBuilder();
 
-    if (enabled) {
+    if (enabled !== undefined) {
       query.andWhere('producto.habilitado = :enabled', { enabled });
     }
     if (discount) {
