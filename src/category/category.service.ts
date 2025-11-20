@@ -182,7 +182,7 @@ export class CategoryService {
       .createQueryBuilder('categoria')
       .where('categoria.habilitado=true')
       .orderBy('categoria.id', 'DESC')
-      .take(6)
+      .take(8)
       .getMany();
 
     const resultados: Category[] = [];
