@@ -47,7 +47,7 @@ export class OrderService {
     private orderStatusService: OrderStatusService,
     private dataSource: DataSource,
     private productService: ProductService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   async generatePDF(id: number) {
@@ -217,8 +217,7 @@ export class OrderService {
       );
       // Step 2: Initialize the client object
       const client = new MercadoPagoConfig({
-        accessToken:
-          `${this.configService.get<string>('MERCADO_PAGO_ACCESS_TOKEN')}`,
+        accessToken: `${this.configService.get<string>('MERCADO_PAGO_ACCESS_TOKEN')}`,
         options: { timeout: 5000 },
       });
 
@@ -240,8 +239,8 @@ export class OrderService {
           transaction_amount: Number(total.toFixed(2)),
         },
       });
-      // console.log(id);
-      if (status !== 'approved') {
+      // console.log(id,status);
+      if (status !== 'approved' && status !== 'in_process') {
         throw new Error('Pago con Yape no realizado');
       }
     } catch (error) {

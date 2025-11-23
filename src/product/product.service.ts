@@ -130,7 +130,7 @@ export class ProductService {
       codigo: uuidv4(),
       nombre: name.trim().toUpperCase(),
       descripcion: description ? description.trim() : undefined,
-      peso_kg: weight_kg||0,
+      peso_kg: weight_kg || 0,
       precio: price,
       porcentaje_descuento: discount ? discount : undefined,
       categoria: category,
@@ -332,7 +332,7 @@ export class ProductService {
 
     product.nombre = name.trim().toUpperCase();
     description ? (product.descripcion = description.trim()) : undefined;
-     weight_kg ? (product.peso_kg = weight_kg) : undefined;
+    weight_kg ? (product.peso_kg = weight_kg) : undefined;
     product.precio = price;
     discount ? (product.porcentaje_descuento = discount) : undefined;
     product.categoria = category;
@@ -415,5 +415,50 @@ export class ProductService {
     });
 
     return [instanceToPlain(entities), count];
+  }
+
+  async newProducts() {
+    const query = this.getBaseSelectQueryBuilder();
+    query.where('producto.habilitado = true');
+    query.orderBy('producto.id', 'DESC');
+    query.limit(10);
+    const entities = await query.clone().getMany();
+    const raw = await query
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      )
+      .getRawMany();
+    entities.forEach((e) => {
+      e.stock = +raw.find((r) => r.id === e.id).stock;
+    });
+    return instanceToPlain(entities);
+  }
+
+  async bestSellingProducts() {
+    const query = this.getBaseSelectQueryBuilder();
+
+    query.where('producto.habilitado = true');
+    query
+      .addSelect('COALESCE(pedidos.total_pedidos, 0)', 'total_pedidos')
+      .orderBy('total_pedidos', 'DESC')
+      .take(10);
+
+    const entities = await query.clone().getMany();
+    
+     const raw = await query
+      .select('producto.id', 'id')
+      .addSelect(
+        'COALESCE(entradas.total_entradas, 0) - COALESCE(pedidos.total_pedidos, 0)',
+        'stock',
+      )
+      .getRawMany();
+
+    entities.forEach((e) => {
+      e.stock = +raw.find((r) => r.id === e.id).stock;
+    });
+
+    return instanceToPlain(entities);
   }
 }

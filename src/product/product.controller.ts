@@ -68,4 +68,15 @@ export class ProductController {
   async catalog(@Param('type') type: string, @Body() findCatalogDto: FindCatalogDto) {
     return await this.productService.catalog(type,findCatalogDto);
   }
+
+  @Public()
+  @Get('newProducts')
+  async newProducts(){
+    return await this.productService.newProducts()
+  }
+  @Public()
+  @Get('bestSellingProducts')
+  async bestSellingProducts(){
+    return await this.productService.bestSellingProducts()
+  }
 }
