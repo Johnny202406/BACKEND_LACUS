@@ -71,7 +71,16 @@ export class AuthService {
     return user;
   }
   async logout(response: Response) {
-    response.clearCookie('auth');
+    response.clearCookie('auth',{
+      httpOnly: true,
+      maxAge: 0,
+      signed: true,
+      secure: this.configService.get<boolean>('COOKIE_SECURE'), // en producción cambiar a true
+      priority: 'high',
+      sameSite: this.configService.get<'lax' | 'strict' | 'none'>('COOKIE_SAMESITE'),
+      // partitioned: true,
+      
+    });
     response.status(HttpStatus.OK);
   }
 
